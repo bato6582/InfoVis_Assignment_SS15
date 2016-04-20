@@ -20,9 +20,9 @@ import java.util.List;
 public class MouseController implements MouseListener,MouseMotionListener {
 	 private Model model;
 	 private View view;
-	 private Element selectedElement = new None();
-	 private double mouseOffsetX;
-	 private double mouseOffsetY;
+	 private Element selectedElement = new None(); // gescaled
+	 private double mouseOffsetX; // nicht gescaled
+	 private double mouseOffsetY; // nicht gescaled
 	 private boolean edgeDrawMode = false;
 	 private DrawingEdge drawingEdge = null;
 	 private boolean fisheyeMode;
@@ -103,16 +103,17 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			view.repaint();
 		} else {
 			
-			selectedElement = getElementContainingPosition(x/scale,y/scale);
+			selectedElement = getElementContainingPosition(x/scale,y/scale); // klein gescaled
+			System.out.println("x: " + x/scale + " y: " + y/scale);
+			System.out.println("element x: " + selectedElement.getX() + " element y: " + selectedElement.getX());
 			/*
 			 * calculate offset
 			 */
-			mouseOffsetX = x - selectedElement.getX() * scale ;
-			mouseOffsetY = y - selectedElement.getY() * scale ;	
+			mouseOffsetX = x - selectedElement.getX() * scale;
+			mouseOffsetY = y - selectedElement.getY() * scale;	
 			
 			
-			view.setTranslateX(mouseOffsetX);
-			view.setTranslateY(mouseOffsetY);
+			
 			
 			
 		}
@@ -169,9 +170,6 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		}
 		
 		
-		view.setTranslateX(x - mouseOffsetX);
-		view.setTranslateY(y - mouseOffsetY);
-		
 		view.repaint();
 	}
 	
@@ -179,9 +177,18 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		int x = e.getX();
 		int y = e.getY();
 		double scale = view.getScale();
+		
 		/*
-		 * Aufgabe 1.2
-		 */
+		* Aufgabe 1.2
+		*/
+		// calculate offset
+		double offsetx = x - mouseOffsetX; // nicht gescaled
+		double offsety = y - mouseOffsetY; // nicht gescaled
+		view.setTranslateX(offsetx);// - view.getWidth() * 0.5); // nicht gescaled
+		view.setTranslateY(offsety);// - view.getHeight() * 0.5);
+//		mouseOffsetX = x;
+//		mouseOffsetY = y;
+	
 		if (fisheyeMode){
 			/*
 			 * handle fisheye mode interactions
@@ -193,7 +200,9 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		}else if(selectedElement != null){
 			selectedElement.updatePosition((e.getX()-mouseOffsetX)/scale, (e.getY()-mouseOffsetY) /scale);
 		}
+		
 		view.repaint();
+		
 	}
 	public void mouseMoved(MouseEvent e) {
 	}

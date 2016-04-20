@@ -44,11 +44,13 @@ public class View extends JPanel{
 		
 		// data
 		g2D.scale(scale,scale);
+		g2D.translate(-translateX, -translateY);
 		paintDiagram(g2D);	
 		
 		//overview
+		g2D.translate(translateX, translateY);
 		g2D.scale(0.25/scale, 0.25/scale);
-		overviewRect = new Rectangle2D.Double(0,0, getWidth(), getHeight());
+		overviewRect.setRect(0,0, getWidth(), getHeight());
 		g2D.setColor(Color.WHITE);
 		g2D.fill(overviewRect);
 		g2D.setColor(Color.BLACK);
@@ -58,10 +60,11 @@ public class View extends JPanel{
 		paintDiagram(g2D);
 		
 		//marker
-		g2D.translate(translateX, translateY);
+		//g2D.translate(translateX, translateY);
 		g2D.scale(1/scale,1/scale);
-
-		marker = new Rectangle2D.Double(0,0, getWidth(), getHeight());
+		g2D.translate(translateX * scale, translateY * scale);
+		marker.setRect(marker.getMinX(), marker.getMinY(), getWidth(), getHeight());
+		System.out.println("min: " + marker.getMinX());
 		g2D.setColor(Color.RED);
 		g2D.draw(marker);
 		
