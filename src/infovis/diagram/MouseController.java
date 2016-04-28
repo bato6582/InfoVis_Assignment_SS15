@@ -26,6 +26,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
 	 private boolean edgeDrawMode = false;
 	 private DrawingEdge drawingEdge = null;
 	 private boolean fisheyeMode;
+     private boolean markerMoving = false;
 	 private GroupingRectangle groupRectangle;
 	/*
 	 * Getter And Setter
@@ -48,14 +49,19 @@ public class MouseController implements MouseListener,MouseMotionListener {
 	/*
      * Implements MouseListener
      */
+
+
+    //mouse is pressed and released without being moved
 	public void mouseClicked(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
 		double scale = view.getScale();
-		
-		
-		
-		if (e.getButton() == MouseEvent.BUTTON3){
+        System.out.println("CLICKED");
+
+
+
+
+        if (e.getButton() == MouseEvent.BUTTON3){
 			/*
 			 * add grouped elements to the model
 			 */
@@ -87,12 +93,81 @@ public class MouseController implements MouseListener,MouseMotionListener {
 
 	public void mouseExited(MouseEvent arg0) {
 	}
+    //mouse is released
+    public void mouseReleased(MouseEvent e){
+        int x = e.getX();
+        int y = e.getY();
+
+        markerMoving = false;
+
+        if (drawingEdge != null){
+            Element to = getElementContainingPosition(x, y);
+            model.addEdge(new Edge(drawingEdge.getFrom(),(Vertex)to));
+            model.removeElement(drawingEdge);
+            drawingEdge = null;
+        }
+        if (groupRectangle != null){
+            Model groupedElements = new Model();
+            for (Iterator<Vertex> iter = model.iteratorVertices(); iter.hasNext();) {
+                Vertex vertex = iter.next();
+                if (groupRectangle.contains(vertex.getShape().getBounds2D())){
+                    Debug.p("Vertex found");
+                    groupedElements.addVertex(vertex);
+                }
+            }
+            if (!groupedElements.isEmpty()){
+                model.removeVertices(groupedElements.getVertices());
+
+                Vertex groupVertex = new Vertex(groupRectangle.getCenterX(),groupRectangle.getCenterX());
+                groupVertex.setColor(Color.ORANGE);
+                groupVertex.setGroupedElements(groupedElements);
+                model.addVertex(groupVertex);
+
+                List<Edge> newEdges = new ArrayList();
+                for (Iterator<Edge> iter = model.iteratorEdges(); iter.hasNext();) {
+                    Edge edge =  iter.next();
+                    if (groupRectangle.contains(edge.getSource().getShape().getBounds2D())
+                            && groupRectangle.contains(edge.getTarget().getShape().getBounds2D())){
+                        groupVertex.getGroupedElements().addEdge(edge);
+                        Debug.p("add Edge to groupedElements");
+                        //iter.remove(); // Warum geht das nicht!
+                    } else if (groupRectangle.contains(edge.getSource().getShape().getBounds2D())){
+                        groupVertex.getGroupedElements().addEdge(edge);
+                        newEdges.add(new Edge(groupVertex,edge.getTarget()));
+                    } else if (groupRectangle.contains(edge.getTarget().getShape().getBounds2D())){
+                        groupVertex.getGroupedElements().addEdge(edge);
+                        newEdges.add(new Edge(edge.getSource(),groupVertex));
+                    }
+                }
+                model.addEdges(newEdges);
+                model.removeEdges(groupedElements.getEdges());
+            }
+            model.removeElement(groupRectangle);
+            groupRectangle = null;
+        }
+
+        // last position of translation, in g2d
+        view.setOldTranslateX(view.getMarker().getX() + view.getTranslateX());
+        view.setOldTranslateY(view.getMarker().getY() + view.getTranslateY());
+
+
+        //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
+
+        //view.repaint();
+    }
+
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
 		double scale = view.getScale();
-		
-	   
+
+        //checks if clicked in marker, can not be called
+        //in dragged() because mouse may move too fast
+        if(view.markerContains(x * 4 * scale , y * 4 * scale) ) {
+            markerMoving = true;
+        }
+
+
 	   if (edgeDrawMode){
 			drawingEdge = new DrawingEdge((Vertex)getElementContainingPosition(x/scale,y/scale));
 			model.addElement(drawingEdge);
@@ -102,7 +177,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 */
 			view.repaint();
 		} else {
-			
+
 			selectedElement = getElementContainingPosition(x/scale,y/scale); // klein gescaled
 			System.out.println("x: " + x/scale + " y: " + y/scale);
 			System.out.println("element x: " + selectedElement.getX() + " element y: " + selectedElement.getX());
@@ -110,85 +185,45 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 * calculate offset
 			 */
 			mouseOffsetX = x - selectedElement.getX() * scale;
-			mouseOffsetY = y - selectedElement.getY() * scale;	
-			
-			
-			
-			
-			
+			mouseOffsetY = y - selectedElement.getY() * scale;
+
+			System.out.println("selected.elementd x : " + selectedElement.getX());
+
+
+
 		}
-		
+
 	}
-	public void mouseReleased(MouseEvent e){
-		int x = e.getX();
-		int y = e.getY();
-		
-		if (drawingEdge != null){
-			Element to = getElementContainingPosition(x, y);
-			model.addEdge(new Edge(drawingEdge.getFrom(),(Vertex)to));
-			model.removeElement(drawingEdge);
-			drawingEdge = null;
-		}
-		if (groupRectangle != null){
-		    Model groupedElements = new Model();
-			for (Iterator<Vertex> iter = model.iteratorVertices(); iter.hasNext();) {
-				Vertex vertex = iter.next();
-				if (groupRectangle.contains(vertex.getShape().getBounds2D())){
-					Debug.p("Vertex found");
-					groupedElements.addVertex(vertex);	
-				}
-			}
-			if (!groupedElements.isEmpty()){
-				model.removeVertices(groupedElements.getVertices());
-				
-				Vertex groupVertex = new Vertex(groupRectangle.getCenterX(),groupRectangle.getCenterX());
-				groupVertex.setColor(Color.ORANGE);
-				groupVertex.setGroupedElements(groupedElements);
-				model.addVertex(groupVertex);
-				
-				List<Edge> newEdges = new ArrayList(); 
-				for (Iterator<Edge> iter = model.iteratorEdges(); iter.hasNext();) {
-					Edge edge =  iter.next();
-				    if (groupRectangle.contains(edge.getSource().getShape().getBounds2D()) 
-				    	&& groupRectangle.contains(edge.getTarget().getShape().getBounds2D())){
-				    		groupVertex.getGroupedElements().addEdge(edge);
-                            Debug.p("add Edge to groupedElements");	
-                            //iter.remove(); // Warum geht das nicht!
-				    } else if (groupRectangle.contains(edge.getSource().getShape().getBounds2D())){
-				    	groupVertex.getGroupedElements().addEdge(edge);
-				    	newEdges.add(new Edge(groupVertex,edge.getTarget()));
-				    } else if (groupRectangle.contains(edge.getTarget().getShape().getBounds2D())){
-				    	groupVertex.getGroupedElements().addEdge(edge);
-				    	newEdges.add(new Edge(edge.getSource(),groupVertex));
-				    }
-				}
-				model.addEdges(newEdges);
-				model.removeEdges(groupedElements.getEdges());
-			}
-			model.removeElement(groupRectangle);
-			groupRectangle = null;
-		}
-		
-		
-		view.repaint();
-	}
-	
+
 	public void mouseDragged(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
 		double scale = view.getScale();
+
 		
 		/*
 		* Aufgabe 1.2
 		*/
 		// calculate offset
-		double offsetx = x - mouseOffsetX; // nicht gescaled
-		double offsety = y - mouseOffsetY; // nicht gescaled
-		view.setTranslateX(offsetx);// - view.getWidth() * 0.5); // nicht gescaled
-		view.setTranslateY(offsety);// - view.getHeight() * 0.5);
+
+        // if selectedElement != nullptr mouseOffset is too small
+		double offsetx = x - mouseOffsetX + selectedElement.getX(); // nicht gescaled
+		double offsety = y - mouseOffsetY + selectedElement.getY(); // nicht gescaled
+
+        if(markerMoving && view.getOverviewRect().contains(x*4, y*4) ){
+			// * 4 because overview window is set to 0.25 * detailwindow
+			// TO DO: create variable in view containing the ration of detail/overview window and use it
+			view.setTranslateX(4 * offsetx);// nicht gescaled
+			view.setTranslateY(4 * offsety);//
+            //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
+            view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
+
+        }
+        System.out.println("dragging: " + view.getMarker().getX());
+
 //		mouseOffsetX = x;
 //		mouseOffsetY = y;
-	
+
 		if (fisheyeMode){
 			/*
 			 * handle fisheye mode interactions
@@ -220,11 +255,14 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			/*
 			 * handle fish eye initial call
 			 */
-			view.repaint();
-		} else {
+            view.repaint();
+        } else {
 			Debug.p("new Normal Layout");
 			view.setModel(model);
 			view.repaint();
+
+
+
 		}
 	}
 	
@@ -241,5 +279,5 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		return currentElement;
 	}
 	
-    
+
 }

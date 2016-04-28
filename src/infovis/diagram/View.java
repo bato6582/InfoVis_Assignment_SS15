@@ -19,8 +19,12 @@ public class View extends JPanel{
 	private double scale = 1;
 	private double translateX= 0;
 	private double translateY=0;
+
+    private double old_translateX=0;
+    private double old_translateY=0;
+
 	private Rectangle2D marker = new Rectangle2D.Double();
-	private Rectangle2D overviewRect = new Rectangle2D.Double();   
+    private Rectangle2D overviewRect = new Rectangle2D.Double();
 
 	public Model getModel() {
 		return model;
@@ -61,13 +65,15 @@ public class View extends JPanel{
 		
 		//marker
 		//g2D.translate(translateX, translateY);
-		g2D.scale(1/scale,1/scale);
+		g2D.scale(1 / scale, 1 / scale);
 		g2D.translate(translateX * scale, translateY * scale);
-		marker.setRect(marker.getMinX(), marker.getMinY(), getWidth(), getHeight());
-		System.out.println("min: " + marker.getMinX());
-		g2D.setColor(Color.RED);
+        //marker.setRect(marker.getX(), marker.getY(), getWidth(), getHeight());
+        //marker.setRect(marker.getMinX(), marker.getMinY(), getWidth(), getHeight());
+        marker.setRect(old_translateX, old_translateY, getWidth(), getHeight());
+        System.out.println("min: " + marker.getX());
+        g2D.setColor(Color.RED);
 		g2D.draw(marker);
-		
+
 		System.out.println(translateX);		
 
 
@@ -110,8 +116,27 @@ public class View extends JPanel{
 	public Rectangle2D getMarker(){
 		return marker;
 	}
-	public boolean markerContains(int x, int y){
+	public boolean markerContains(double x, double y){
 		return marker.contains(x, y);
 	}
+
+
+
+    public void setOldTranslateX(double translateX) {
+        this.old_translateX = translateX;
+    }
+
+    public void setOldTranslateY(double translateX) {
+        this.old_translateY = translateX;
+    }
+
+
+    public Rectangle2D getOverviewRect(){
+        return overviewRect;
+    }
+
+
+
+
 }
  
