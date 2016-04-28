@@ -147,13 +147,13 @@ public class MouseController implements MouseListener,MouseMotionListener {
         }
 
         // last position of translation, in g2d
-        view.setOldTranslateX(view.getMarker().getX() + view.getTranslateX());
-        view.setOldTranslateY(view.getMarker().getY() + view.getTranslateY());
-
+        view.setOldTranslateX(view.getMarker().getX() / view.getScale()  + view.getTranslateX());
+        view.setOldTranslateY(view.getMarker().getY() / view.getScale() + view.getTranslateY());
+        view.updateTranslation(0.0, 0.0);
 
         //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
-
-        //view.repaint();
+        
+        view.repaint();
     }
 
 	public void mousePressed(MouseEvent e) {
