@@ -8,7 +8,7 @@ import javax.swing.SwingUtilities;
 public class ParaCoords {
 	private MouseController controller = null;
     private Model model = null;
-    private View view = null;
+    private static View view = null;
        
 	public View getView() {
 		if (view == null) generateDiagram();
@@ -31,6 +31,7 @@ public class ParaCoords {
 				GUI application = new GUI();
 				application.setView(new ParaCoords().getView());
 				application.getJFrame().setVisible(true);
+				view.initialize();
 			}
 		});
 	}
