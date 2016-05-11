@@ -4,7 +4,7 @@ import infovis.debug.Debug;
 import infovis.diagram.elements.Element;
 
 import java.awt.Color;
-import java.awt.Font;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -30,7 +30,7 @@ public class View extends JPanel {
 			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 			g2D.clearRect(0, 0, getWidth(), getHeight());
 	        
-//			g2D.setFont(new Font("TimesRoman", Font.PLAIN, 18)); 
+
 			
 			g2D.setColor(Color.WHITE);
 			g2D.fill(cell);
@@ -39,6 +39,7 @@ public class View extends JPanel {
 			g2D.setColor(Color.BLACK);
 			
 			
+
 			int border_left = 125;
 			int border_up = 60;
 			int numProperties = model.getLabels().size();
@@ -53,6 +54,7 @@ public class View extends JPanel {
 				for (int currentCell = 0; currentCell < numProperties; ++ currentCell) {
 					double xpos = currentCell * cellWidth + border_left;
 					double ypos = currentRow * cellHeight + border_up;
+
 					cell.setRect(xpos, ypos, cellWidth, cellHeight);
 					g2D.draw(cell);
 					
@@ -73,6 +75,7 @@ public class View extends JPanel {
 						xValue = xValue * xratio;
 						yValue = yValue * yratio;
 						//System.out.println(xValue + "				" + innerCellWidth);
+
 						if (markerRectangle.contains(new Rectangle2D.Double(xpos + xValue + 5, ypos + yValue + 5, 3, 3))) {
 							d.chosen = true;
 							g2D.setColor(Color.BLUE);
@@ -86,6 +89,7 @@ public class View extends JPanel {
 							g2D.setColor(Color.RED);
 						}
 						
+
 						g2D.fill(dataPoint);
 						dataPoint.setRect(xpos + xValue + 5, ypos + yValue + 5, 3, 3);
 						g2D.setColor(Color.BLACK);
@@ -93,6 +97,7 @@ public class View extends JPanel {
 					
 
 					}
+
 				}
 			}
 
@@ -123,6 +128,7 @@ public class View extends JPanel {
 			// marker rectangle
 			g2D.setColor(Color.GREEN);
 			g2D.draw(markerRectangle);
+
 	        
 			
 		}
