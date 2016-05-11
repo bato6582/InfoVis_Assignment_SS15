@@ -8,6 +8,7 @@ public class Data{
 	private double [] values;
 	private Color color = Color.BLACK;
 	private String label = "";
+	public boolean chosen = false;
 	
 	public Data(double[] values, String label) {
 		super();
