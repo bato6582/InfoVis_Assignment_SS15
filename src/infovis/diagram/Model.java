@@ -77,14 +77,19 @@ public class Model {
 		return idCounter;
 	}
 	public void generateTestValues(){
-		addVertex(new Vertex(70,90));
-    	addVertex(new Vertex(270,290));
-    	addVertex(new Vertex(270,230));
-    	addVertex(new Vertex(210,290));
-    	addVertex(new Vertex(400,90));
-    	addVertex(new Vertex(400,690));
-    	addVertex(new Vertex(700,90));
-    	addVertex(new Vertex(700,490));
+//		addVertex(new Vertex(70,90));
+//    	addVertex(new Vertex(270,290));
+//    	addVertex(new Vertex(270,230));
+//    	addVertex(new Vertex(210,290));
+//    	addVertex(new Vertex(400,90));
+//    	addVertex(new Vertex(400,690));
+//    	addVertex(new Vertex(700,90));
+//    	addVertex(new Vertex(700,490));
+		for (int i = 0; i < 500; i= i + 90) {
+			for(int j = 0; j < 750; j = j + 80) {
+				addVertex(new Vertex(j, i));
+			}
+		}
 	}
 	public boolean isEmpty(){
 		return elements.isEmpty();
