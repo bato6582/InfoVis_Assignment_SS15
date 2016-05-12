@@ -17,4 +17,6 @@ public interface Element {
  public void setX (double x);
  public void setY (double y);
  public void updatePosition(double x,double y);
+ public double getWidth();
+ public double getHeight();
 }

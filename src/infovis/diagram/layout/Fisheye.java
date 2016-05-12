@@ -21,32 +21,39 @@ public class Fisheye implements Layout{
 
 	public Model transform(Model model, View view) {
 		
-		
-		
-		
-//		for (Element element: model.getElements()){
-//			element.setHeight(3);
-//		}
+		System.out.println("HAAAALLLLLOOOO");
+		for (Element element: model.getElements()){
+			element.setX(fish(element.getX(), element.getX() + 0.5 * element.getWidth(), view.getScale(), view.getWidth()));
+			element.setY(fish(element.getY(), element.getY() + 0.5 * element.getHeight(), view.getScale(), view.getHeight()));
+			//			element.setHeight(3);
+		}
 		return null;
 	}
 	
 	
-	static void fish(int x, int y, double d){
+	static double fish(double pNorm, double pBoundary, double d, int size){
+		double pFocus = size * 0.5;
+		double dMax = 0;
 		
-		double pNormX = 1;
-		double pFocusX = 1;
-		double pBoundaryX = 1;
-		double dMaxX = 1;
-		
-		if (pNormX > pFocusX) {
-			dMaxX = pBoundaryX - pFocusX;
-		} else if ( pNormX < pFocusX) {
-			dMaxX = - pFocusX;
+
+		if (pNorm > pFocus) {
+			System.out.println("Fall 1");
+			dMax = /*pBoundary*/ + pFocus;
+		} else if ( pNorm < pFocus) {
+			System.out.println("Fall 2");
+			dMax = - pFocus;
+		}  else {
+			return pNorm;
 		}
-		double dNormX = pNormX - pFocusX;
-		double valueX = dNormX / dMaxX;
-		double gX = ((d + 1) * valueX) / (d * valueX + 1);
-		double pFishX = pFocusX + gX * dMaxX;
+		
+		double dNorm = pNorm - pFocus;
+		double value = dNorm / dMax;
+		double g = ((d + 1) * value) / (d * value + 1);
+		double pFish = pFocus + g * dMax;
+		
+		return pFish;
 	}
+	
+	
 	
 }

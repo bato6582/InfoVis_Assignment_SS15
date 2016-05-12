@@ -23,11 +23,14 @@ public class MouseController implements MouseListener,MouseMotionListener {
 	 private Element selectedElement = new None(); // gescaled
 	 private double mouseOffsetX; // nicht gescaled
 	 private double mouseOffsetY; // nicht gescaled
+	 private double xClicked = 0;
+	 private double yClicked = 0;
 	 private boolean edgeDrawMode = false;
 	 private DrawingEdge drawingEdge = null;
 	 private boolean fisheyeMode;
      private boolean markerMoving = false;
 	 private GroupingRectangle groupRectangle;
+	 private Fisheye fisheye = new Fisheye();
 	/*
 	 * Getter And Setter
 	 */
@@ -56,7 +59,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		int x = e.getX();
 		int y = e.getY();
 		double scale = view.getScale();
-        System.out.println("CLICKED");
+//        System.out.println("CLICKED");
 
 
 
@@ -146,19 +149,27 @@ public class MouseController implements MouseListener,MouseMotionListener {
             groupRectangle = null;
         }
 
+        view.repaint();
+
+        
         // last position of translation, in g2d
-        view.setOldTranslateX(view.getMarker().getX() + view.getTranslateX());
-        view.setOldTranslateY(view.getMarker().getY() + view.getTranslateY());
+        view.setOldTranslateX(view.getOldTranslateX() + view.getTranslateX());
+        view.setOldTranslateY(view.getOldTranslateY() + view.getTranslateY());
+
+        
+        view.setTranslateX(0.0);
+        view.setTranslateY(0.0);
 
 
         //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
 
-        //view.repaint();
     }
 
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
+		xClicked= e.getX();
+		yClicked = e.getY();
 		double scale = view.getScale();
 
         //checks if clicked in marker, can not be called
@@ -175,19 +186,21 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			/*
 			 * do handle interactions in fisheye mode
 			 */
+			
+			model = fisheye.transform(model, view);
 			view.repaint();
 		} else {
 
 			selectedElement = getElementContainingPosition(x/scale,y/scale); // klein gescaled
-			System.out.println("x: " + x/scale + " y: " + y/scale);
-			System.out.println("element x: " + selectedElement.getX() + " element y: " + selectedElement.getX());
+//			System.out.println("x: " + x/scale + " y: " + y/scale);
+//			System.out.println("element x: " + selectedElement.getX() + " element y: " + selectedElement.getX());
 			/*
 			 * calculate offset
 			 */
-			mouseOffsetX = x - selectedElement.getX() * scale;
-			mouseOffsetY = y - selectedElement.getY() * scale;
+//			mouseOffsetX = x - selectedElement.getX() * scale;
+//			mouseOffsetY = y - selectedElement.getY() * scale;
 
-			System.out.println("selected.elementd x : " + selectedElement.getX());
+//			System.out.println("selected.elementd x : " + selectedElement.getX());
 
 
 
@@ -206,20 +219,20 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		*/
 		// calculate offset
 
-        // if selectedElement != nullptr mouseOffset is too small
-		double offsetx = x - mouseOffsetX + selectedElement.getX(); // nicht gescaled
-		double offsety = y - mouseOffsetY + selectedElement.getY(); // nicht gescaled
+ 
+		double offsetx = x - xClicked; // nicht gescaled
+		double offsety = y - yClicked; // nicht gescaled
 
         if(markerMoving && view.getOverviewRect().contains(x*4, y*4) ){
 			// * 4 because overview window is set to 0.25 * detailwindow
-			// TO DO: create variable in view containing the ration of detail/overview window and use it
+			// TO DO: create variable in view containing the ration of detail/overview window and use it insted of 4
 			view.setTranslateX(4 * offsetx);// nicht gescaled
 			view.setTranslateY(4 * offsety);//
             //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
-            view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
+//            view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
 
         }
-        System.out.println("dragging: " + view.getMarker().getX());
+//        System.out.println("dragging: " + view.getMarker().getX());
 
 //		mouseOffsetX = x;
 //		mouseOffsetY = y;

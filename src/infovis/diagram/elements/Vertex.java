@@ -18,7 +18,7 @@ public class Vertex implements Element {
 	private Color color = Color.BLUE;
 	private Color background = Color.WHITE;
 	private Font font = new Font("sansserif", Font.BOLD, 12);
-	RectangularShape shape ;
+	private RectangularShape shape ;
 	private int id = 0;
 	private Model groupedElements;
 	

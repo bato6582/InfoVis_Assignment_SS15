@@ -42,18 +42,23 @@ public class View extends JPanel{
 	
 	public void paint(Graphics g) {
 		
+		
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.clearRect(0, 0, getWidth(), getHeight());
 		
+		g2D.drawLine((int) (getWidth() * 0.5), 0, (int) (getWidth() * 0.5), (int)getHeight());
+		g2D.drawLine(0,(int)( 0.5 * getHeight() ), getWidth(), (int) ( 0.5 * getHeight()));
 		// data
 		g2D.scale(scale,scale);
-		g2D.translate(-translateX, -translateY);
+		g2D.translate(-old_translateX - translateX, -old_translateY -translateY);
 		paintDiagram(g2D);	
+		System.out.println(translateX + " , " + translateY);
+		
 		
 		//overview
-		g2D.translate(translateX, translateY);
 		g2D.scale(0.25/scale, 0.25/scale);
+		g2D.translate((old_translateX + translateX)*scale*4, 4*scale*(old_translateY + translateY));
 		overviewRect.setRect(0,0, getWidth(), getHeight());
 		g2D.setColor(Color.WHITE);
 		g2D.fill(overviewRect);
@@ -70,11 +75,11 @@ public class View extends JPanel{
         //marker.setRect(marker.getX(), marker.getY(), getWidth(), getHeight());
         //marker.setRect(marker.getMinX(), marker.getMinY(), getWidth(), getHeight());
         marker.setRect(old_translateX, old_translateY, getWidth(), getHeight());
-        System.out.println("min: " + marker.getX());
+//        System.out.println("min: " + marker.getX());
         g2D.setColor(Color.RED);
 		g2D.draw(marker);
 
-		System.out.println(translateX);		
+//		System.out.println(translateX);		
 
 
 		
@@ -135,6 +140,13 @@ public class View extends JPanel{
         return overviewRect;
     }
 
+    public double getOldTranslateX(){
+    	return old_translateX;
+    }
+    
+    public double getOldTranslateY(){
+    	return old_translateY;
+    }
 
 
 
