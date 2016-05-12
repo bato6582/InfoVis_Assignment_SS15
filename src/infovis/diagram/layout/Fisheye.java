@@ -23,22 +23,24 @@ public class Fisheye implements Layout{
 		
 		System.out.println("HAAAALLLLLOOOO");
 		for (Element element: model.getElements()){
-			element.setX(fish(element.getX(), element.getX() + 0.5 * element.getWidth(), view.getScale(), view.getWidth()));
-			element.setY(fish(element.getY(), element.getY() + 0.5 * element.getHeight(), view.getScale(), view.getHeight()));
-			//			element.setHeight(3);
+			element.setX(fish(element.getX(), view.getWidth(), view.getScale()));
+			element.setY(fish(element.getY(), view.getHeight(), view.getScale()));
 		}
 		return null;
 	}
 	
-	
-	static double fish(double pNorm, double pBoundary, double d, int size){
-		double pFocus = size * 0.5;
+	static double fish(double pNorm, double pBoundary, double d){
+		//combines scaling and translation
+		return fishTranslate(pNorm, pBoundary, d);
+	}
+	static double fishTranslate(double pNorm, double screenBoundary, double d){
+		double pFocus = screenBoundary * 0.5;
 		double dMax = 0;
 		
 
 		if (pNorm > pFocus) {
 			System.out.println("Fall 1");
-			dMax = /*pBoundary*/ + pFocus;
+			dMax = screenBoundary - pFocus;
 		} else if ( pNorm < pFocus) {
 			System.out.println("Fall 2");
 			dMax = - pFocus;
