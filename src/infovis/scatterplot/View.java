@@ -2,6 +2,7 @@ package infovis.scatterplot;
 
 import infovis.debug.Debug;
 import infovis.diagram.elements.Element;
+import javafx.util.Pair;
 
 import java.awt.Color;
 
@@ -9,6 +10,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -17,14 +20,81 @@ public class View extends JPanel {
 	     private Model model = null;
 	     private Rectangle2D cell = new Rectangle2D.Double(0,0,0,0);
 	     private Rectangle2D dataPoint = new Rectangle2D.Double(0,0,0,0); 
+	     private Map<Pair<String, String>, Rectangle2D.Double[]> dataPoints = new HashMap<Pair<String, String>, Rectangle2D.Double[]>();
 	     private Rectangle2D markerRectangle = new Rectangle2D.Double(0,0,0,0); 
 
+	     private double width;
+	     private double height;
+	     
+	     
 		 public Rectangle2D getMarkerRectangle() {
 			return markerRectangle;
 		}
 		 
+		public void initialize(){
+			
+			
+			
+
+			int border_left = 125;
+			int border_up = 60;
+			int numProperties = model.getLabels().size();
+			double cellHeight = (getHeight() - border_up)/ numProperties;
+			double innerCellHeight = cellHeight - 10;
+			double cellWidth = (getWidth() - border_left)/ numProperties;
+			double innerCellWidth = cellWidth - 10;
+
+			ArrayList<String> labels = model.getLabels();
+			ArrayList<Range> ranges = model.getRanges();
+			
+			// content
+			for (int currentRow = 0; currentRow < numProperties; ++currentRow) {
+				String yLabel = labels.get(currentRow);
+				for (int currentCell = 0; currentCell < numProperties; ++ currentCell) {
+					double xpos = currentCell * cellWidth + border_left;
+					double ypos = currentRow * cellHeight + border_up;
+
+					//X - Axis
+					double xmin = model.getRanges().get(currentCell).getMin();
+					double xmax = model.getRanges().get(currentCell).getMax();
+					double xratio = innerCellWidth / (xmax - xmin);
+					
+					//Y - Axis
+					double ymin = model.getRanges().get(currentRow).getMin();
+					double ymax = model.getRanges().get(currentRow).getMax();
+					double yratio = innerCellHeight / (ymax - ymin);
+
+					String xLabel = labels.get(currentCell);
+					Pair<String, String> key = new Pair(xLabel, yLabel);
+					
+					Rectangle2D.Double[] points= new Rectangle2D.Double [model.getList().size()];
+					int dataIter = 0;
+					for (Data d : model.getList()) {
+						double xValue = d.getValues()[currentCell] - xmin;
+						double yValue = d.getValues()[currentRow] - ymin;
+						xValue = xValue * xratio;
+						yValue = yValue * yratio;
+						//System.out.println(xValue + "				" + innerCellWidth);
+
+						points[dataIter] = new Rectangle2D.Double(xpos + xValue + 5, ypos + yValue + 5, 3, 3);
+					
+						dataIter++;
+					}
+
+					dataPoints.put(key, points);
+				}
+			}
+
+			width = getWidth();
+			height = getHeight();
+		}
+		 
 		@Override
 		public void paint(Graphics g) {
+			
+			if (width != getWidth() || height != getHeight()) {
+				initialize();
+			}
 			
 			Graphics2D g2D = (Graphics2D) g;
 			g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
@@ -49,8 +119,12 @@ public class View extends JPanel {
 			double innerCellWidth = cellWidth - 10;
 
 			
+			ArrayList<String> labels = model.getLabels();
+			ArrayList<Range> ranges = model.getRanges();
+			
 			// content
 			for (int currentRow = 0; currentRow < numProperties; ++currentRow) {
+				String yLabel = labels.get(currentRow);
 				for (int currentCell = 0; currentCell < numProperties; ++ currentCell) {
 					double xpos = currentCell * cellWidth + border_left;
 					double ypos = currentRow * cellHeight + border_up;
@@ -58,52 +132,42 @@ public class View extends JPanel {
 					cell.setRect(xpos, ypos, cellWidth, cellHeight);
 					g2D.draw(cell);
 					
-					//X - Axis
-					double xmin = model.getRanges().get(currentCell).getMin();
-					double xmax = model.getRanges().get(currentCell).getMax();
-					double xratio = innerCellWidth / (xmax - xmin);
-					
-					//Y - Axis
-					double ymin = model.getRanges().get(currentRow).getMin();
-					double ymax = model.getRanges().get(currentRow).getMax();
-					double yratio = innerCellHeight / (ymax - ymin);
+
 
 					
-					for (Data d : model.getList()) {
-						double xValue = d.getValues()[currentCell] - xmin;
-						double yValue = d.getValues()[currentRow] - ymin;
-						xValue = xValue * xratio;
-						yValue = yValue * yratio;
-						//System.out.println(xValue + "				" + innerCellWidth);
+					String xLabel = labels.get(currentCell);
+					Pair<String, String> key = new Pair(xLabel, yLabel);
+					
+					int dataIter = 0;
+					for (Rectangle2D rect : dataPoints.get(key)) {
+						g2D.setColor(Color.RED);
 
-						if (markerRectangle.contains(new Rectangle2D.Double(xpos + xValue + 5, ypos + yValue + 5, 3, 3))) {
-							d.chosen = true;
-							g2D.setColor(Color.BLUE);
+						if (markerRectangle.contains(rect)) {
+										g2D.setColor(Color.BLUE);
 						} else {
-							g2D.setColor(Color.RED);
+							for(Pair<String, String> otherKey : dataPoints.keySet()){
+								Rectangle2D.Double otherRect = dataPoints.get(otherKey)[dataIter];
+								if (markerRectangle.contains(otherRect)) {
+									g2D.setColor(Color.BLUE);
+									break;
+								}
+							}
 						}
 						
-						if (d.chosen) {
-							g2D.setColor(Color.BLUE);
-						} else {
-							g2D.setColor(Color.RED);
-						}
 						
 
-						g2D.fill(dataPoint);
-						dataPoint.setRect(xpos + xValue + 5, ypos + yValue + 5, 3, 3);
+						g2D.fill(rect);
 						g2D.setColor(Color.BLACK);
-						g2D.draw(dataPoint);
+						g2D.draw(rect);
 					
 
+						dataIter++;
 					}
-
 				}
 			}
 
 			// labels
-			ArrayList<String> labels = model.getLabels();
-			ArrayList<Range> ranges = model.getRanges();
+
 			for (int currentCell = 0; currentCell < numProperties; ++ currentCell) {
 				String label = labels.get(currentCell);
 				double xpos = currentCell * cellWidth + border_left;

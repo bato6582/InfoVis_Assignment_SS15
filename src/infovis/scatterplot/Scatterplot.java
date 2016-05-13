@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 public class Scatterplot {
-	private View view;
+	private static View view;
 	private Model model;
 	private MouseController controller ;
 	
@@ -32,6 +32,7 @@ public class Scatterplot {
 				GUI application = new GUI();
 				application.setView(new Scatterplot().getView());
 				application.getJFrame().setVisible(true);
+				view.initialize();
 			}
 		});
 	}

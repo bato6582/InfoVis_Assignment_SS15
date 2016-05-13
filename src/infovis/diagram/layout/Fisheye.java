@@ -30,7 +30,7 @@ public class Fisheye implements Layout{
 			vertex.setWidth(fishScale(vertex.getX(), vertex.getCenterX(), x, view.getWidth(), view.getScale()));
 			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), y, view.getHeight(), view.getScale()));
 		}
-		return null;
+		return model;
 	}
 	
 	
