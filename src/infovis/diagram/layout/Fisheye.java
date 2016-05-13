@@ -19,22 +19,23 @@ public class Fisheye implements Layout{
 		// TODO Auto-generated method stub
 	}
 
-	public Model transform(Model model, View view) {
+	public Model transform(Model model, View view, int x, int y) {
+		
+		
 		
 		System.out.println("HAAAALLLLLOOOO");
-		for (Element element: model.getElements()){
-			element.setX(fish(element.getX(), view.getWidth(), view.getScale()));
-			element.setY(fish(element.getY(), view.getHeight(), view.getScale()));
+		for (Vertex vertex: model.getVertices()){
+			vertex.setX(fishTranslate(vertex.getCenterX(), x, view.getWidth(), view.getScale()) - vertex.getWidth() * 0.5);
+			vertex.setY(fishTranslate(vertex.getCenterY(), y, view.getHeight(), view.getScale()) - vertex.getHeight() * 0.5);
+			vertex.setWidth(fishScale(vertex.getX(), vertex.getCenterX(), x, view.getWidth(), view.getScale()));
+			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), y, view.getHeight(), view.getScale()));
 		}
 		return null;
 	}
 	
-	static double fish(double pNorm, double pBoundary, double d){
-		//combines scaling and translation
-		return fishTranslate(pNorm, pBoundary, d);
-	}
-	static double fishTranslate(double pNorm, double screenBoundary, double d){
-		double pFocus = screenBoundary * 0.5;
+	
+	static double fishTranslate(double pNorm, double pFocus, double screenBoundary, double d){
+
 		double dMax = 0;
 		
 
@@ -54,6 +55,21 @@ public class Fisheye implements Layout{
 		double pFish = pFocus + g * dMax;
 		
 		return pFish;
+	}
+	
+	
+	static double fishScale(double qNorm, double pNorm, double pFocus, double screenBoundary, double d){
+		double qFish = fishTranslate(qNorm, pFocus, screenBoundary, d); //TODO augment pNorm
+		
+		double sGeom = 2 * Math.min(Math.abs(qFish - fishTranslate(pNorm, pFocus, screenBoundary, d)), Math.abs(fishTranslate(pNorm, pFocus, screenBoundary, d) - qFish)); //unaugmented pNorm
+		System.out.println(sGeom);
+		return sGeom;
+	}
+
+	@Override
+	public Model transform(Model model, View view) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

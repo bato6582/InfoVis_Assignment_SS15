@@ -187,7 +187,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 * do handle interactions in fisheye mode
 			 */
 			
-			model = fisheye.transform(model, view);
+			model = fisheye.transform(model, view, x, y);
 			view.repaint();
 		} else {
 
