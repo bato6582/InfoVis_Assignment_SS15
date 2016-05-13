@@ -33,9 +33,12 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		Map<Rectangle2D.Double, String> map = view.getSelectionRectangle();
 		for (Rectangle2D.Double rect : map.keySet()) {
 			if (rect.contains(e.getX(), e.getY())) {
+//				view.selectionRectangles.remove(rect);
+				view.selectedRectangle = rect;
 				view.dragLabel = true;
 				view.draggedLabel = map.get(rect);
 				clickedX = e.getX();
+				view.oldXOffset = 0.0;
 				return;
 			}
 		}
@@ -47,13 +50,19 @@ public class MouseController implements MouseListener, MouseMotionListener {
 
 	public void mouseReleased(MouseEvent e) {
 		view.dragLabel = false;
+		view.oldXOffset = view.xOffset;
+		view.xOffset = 0.0;
+//		System.out.println("HIIIIII");
+		view.checkAxes();
+		view.repaint();
 	}
 
 	public void mouseDragged(MouseEvent e) {
 //		view.clearData();
 		if (view.dragLabel) {
-			view.xOffset = e.getX() - clickedX;
-			
+//			System.out.println("(" + e.getX() + " - " + clickedX +") - " + view.xOffset + " = " + ((e.getX() - clickedX) - view.xOffset));
+			view.oldXOffset = view.xOffset;
+			view.xOffset = (e.getX() - clickedX);
 		} else {		
 			Rectangle2D rect = view.getMarkerRectangle();
 			double width = e.getX() - rect.getMinX();
