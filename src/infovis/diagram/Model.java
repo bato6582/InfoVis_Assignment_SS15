@@ -94,6 +94,18 @@ public class Model {
 	public boolean isEmpty(){
 		return elements.isEmpty();
 	}
+	
+	public void setEdges(List<Edge> newEdges) {
+		edges = newEdges;
+	}
+	
+	public void setVertices(List<Vertex> newVertices) {
+		vertices = newVertices;
+	}
+	
+	public void setElements(List<Element> newElements) {
+		elements = newElements;
+	}
 
 	public List<Edge> getEdges() {
 		return edges;
@@ -105,6 +117,14 @@ public class Model {
 	
 	public List<Element> getElements() {
 		return elements;
+	}
+	
+	public Model copyModel() {
+		Model newModel = new Model();
+		newModel.setEdges(edges);
+		newModel.setVertices(vertices);
+		newModel.setElements(elements);
+		return newModel;
 	}
 	
 }

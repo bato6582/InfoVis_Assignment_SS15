@@ -29,6 +29,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
 	 private DrawingEdge drawingEdge = null;
 	 private boolean fisheyeMode;
      private boolean markerMoving = false;
+     private boolean windowMoving = false;
 	 private GroupingRectangle groupRectangle;
 	 private Fisheye fisheye = new Fisheye();
 	/*
@@ -102,6 +103,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
         int y = e.getY();
 
         markerMoving = false;
+        windowMoving = false;
 
         if (drawingEdge != null){
             Element to = getElementContainingPosition(x, y);
@@ -141,7 +143,7 @@ public class MouseController implements MouseListener,MouseMotionListener {
                         groupVertex.getGroupedElements().addEdge(edge);
                         newEdges.add(new Edge(edge.getSource(),groupVertex));
                     }
-                }
+                 }
                 model.addEdges(newEdges);
                 model.removeEdges(groupedElements.getEdges());
             }
@@ -155,10 +157,15 @@ public class MouseController implements MouseListener,MouseMotionListener {
         // last position of translation, in g2d
         view.setOldTranslateX(view.getOldTranslateX() + view.getTranslateX());
         view.setOldTranslateY(view.getOldTranslateY() + view.getTranslateY());
-
+        
+        view.oldWindowOffsetX = view.oldWindowOffsetX + view.windowOffsetX;
+        view.oldWindowOffsetY = view.oldWindowOffsetY + view.windowOffsetY;
         
         view.setTranslateX(0.0);
         view.setTranslateY(0.0);
+        
+        view.windowOffsetX = 0.0;
+        view.windowOffsetY = 0.0;
 
 
         //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
@@ -174,24 +181,36 @@ public class MouseController implements MouseListener,MouseMotionListener {
 
         //checks if clicked in marker, can not be called
         //in dragged() because mouse may move too fast
-        if(view.markerContains(x * 4 * scale , y * 4 * scale) ) {
+        if(view.markerContains(((-view.windowOffsetX - view.oldWindowOffsetX + x) * 4 - view.border) * scale, ((-view.windowOffsetY - view.oldWindowOffsetY + y) * 4 - view.border) * scale)) {
             markerMoving = true;
+        } else if (view.windowContains((x * 4) , (y * 4) ) && !(view.overviewContains((x * 4 - view.border) , (y * 4 - view.border)))) {
+        	windowMoving = true;
+        	System.out.println("I like to move it move it");
         }
-
+//        model = new Model();
+//        model.generateTestValues();
 
 	   if (edgeDrawMode){
 			drawingEdge = new DrawingEdge((Vertex)getElementContainingPosition(x/scale,y/scale));
 			model.addElement(drawingEdge);
+			
 		} else if (fisheyeMode){
-			/*
-			 * do handle interactions in fisheye mode
-			 */
+			Model tmpModel = new Model();
+			tmpModel.generateTestValues();
+			int iter = 0;
+			for (Vertex vert : model.getVertices()) {
+				vert.setX(tmpModel.getVertices().get(iter).getX());
+				vert.setY(tmpModel.getVertices().get(iter).getY());
+				vert.setHeight(tmpModel.getVertices().get(iter).getHeight());
+				vert.setWidth(tmpModel.getVertices().get(iter).getWidth());
+				iter++;
+			}
 			
 			model = fisheye.transform(model, view, x, y);
 			view.repaint();
 		} else {
 
-			selectedElement = getElementContainingPosition(x/scale,y/scale); // klein gescaled
+			selectedElement = getElementContainingPosition((x + view.getOldTranslateX()*scale)/scale, (y + view.getOldTranslateY()*scale)/scale); // klein gescaled
 //			System.out.println("x: " + x/scale + " y: " + y/scale);
 //			System.out.println("element x: " + selectedElement.getX() + " element y: " + selectedElement.getX());
 			/*
@@ -219,6 +238,8 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		*/
 		// calculate offset
 
+//		model = new Model();
+//		model.generateTestValues();
  
 		double offsetx = x - xClicked; // nicht gescaled
 		double offsety = y - yClicked; // nicht gescaled
@@ -231,6 +252,9 @@ public class MouseController implements MouseListener,MouseMotionListener {
             //view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
 //            view.getMarker().setRect(view.getTranslateX() * view.getScale(), view.getTranslateY() * view.getScale(), view.getWidth(), view.getHeight());
 
+        } else if (windowMoving) {
+        	view.windowOffsetX = offsetx; 
+        	view.windowOffsetY = offsety; 
         }
 //        System.out.println("dragging: " + view.getMarker().getX());
 
@@ -238,15 +262,25 @@ public class MouseController implements MouseListener,MouseMotionListener {
 //		mouseOffsetY = y;
 
 		if (fisheyeMode){
-			/*
-			 * handle fisheye mode interactions
-			 */
+			Model tmpModel = new Model();
+			tmpModel.generateTestValues();
+			int iter = 0;
+			for (Vertex vert : model.getVertices()) {
+				vert.setX(tmpModel.getVertices().get(iter).getX());
+				vert.setY(tmpModel.getVertices().get(iter).getY());
+				vert.setHeight(tmpModel.getVertices().get(iter).getHeight());
+				vert.setWidth(tmpModel.getVertices().get(iter).getWidth());
+				iter++;
+			}
+
+			
+			model = fisheye.transform(model, view, x, y);
 			view.repaint();
 		} else if (edgeDrawMode){
 			drawingEdge.setX(e.getX());
 			drawingEdge.setY(e.getY());
 		}else if(selectedElement != null){
-			selectedElement.updatePosition((e.getX()-mouseOffsetX)/scale, (e.getY()-mouseOffsetY) /scale);
+			selectedElement.updatePosition((e.getX() - mouseOffsetX) / scale + view.getOldTranslateX(), (e.getY() - mouseOffsetY) / scale + view.getOldTranslateY());
 		}
 		
 		view.repaint();

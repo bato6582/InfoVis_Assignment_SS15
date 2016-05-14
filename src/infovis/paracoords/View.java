@@ -23,7 +23,7 @@ public class View extends JPanel {
 	private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
 	private boolean[] chosen;
 	private Map<String, Rectangle2D.Double[]> axes = new HashMap<String, Rectangle2D.Double[]>();
-	private Map<Rectangle2D.Double, String> selectionRectangles = new HashMap<Rectangle2D.Double, String>();
+	public Map<String, Rectangle2D.Double> labelSelectionRectMap = new HashMap<String, Rectangle2D.Double>();
 	public Rectangle2D.Double selectedRectangle;
 
 	private double width;
@@ -31,6 +31,7 @@ public class View extends JPanel {
 
 	private ArrayList<String> properties;
 	private ArrayList<Range> ranges;
+	private ArrayList<Data> list;
 
 	public double xOffset = 0.0;
 	public double oldXOffset = 0.0;
@@ -41,9 +42,13 @@ public class View extends JPanel {
 		if (properties == null) {
 			properties = model.getLabels();
 		}
-		
-		if (ranges == null){
+
+		if (ranges == null) {
 			ranges = model.getRanges();
+		}
+
+		if (list == null) {
+			list = model.getList();
 		}
 
 		int upperBorder = 30;
@@ -51,29 +56,29 @@ public class View extends JPanel {
 		int numProperties = properties.size();
 
 		int distance = (getWidth() - 2 * leftBorder) / (numProperties - 1);
-//		System.out.println("distance=  (" + getWidth() + " - 120) / (" + numProperties + " -1)");
 
 		int xpos = leftBorder;
 		int ypos = upperBorder;
 		int iter = 0;
 		for (String label : properties) {
 			// labels
-			Rectangle2D.Double selectionRectangle = new Rectangle2D.Double(xpos - label.length() * 2.5f,
-					getHeight() - upperBorder + 5, 2 * label.length() * 2.5f, 10);
-			selectionRectangles.put(selectionRectangle, label);
-			Rectangle2D.Double[] points = new Rectangle2D.Double[model.getList().size()];
+			Rectangle2D.Double selectionRectangle = new Rectangle2D.Double(xpos
+					- label.length() * 2.5f, getHeight() - upperBorder + 5,
+					2 * label.length() * 2.5f, 10);
+			labelSelectionRectMap.put(label, selectionRectangle);
 
 			double min = ranges.get(iter).getMin();
 			double max = ranges.get(iter).getMax();
-			System.out.println("Min: " + min + "  Max: " + max);
 
 			// data
-			double yratio = (getHeight() - upperBorder * 2 - ypos) / (max - min);
+			Rectangle2D.Double[] points = new Rectangle2D.Double[list.size()];
+			double yratio = (getHeight() - upperBorder * 2 - ypos)
+					/ (max - min);
 
 			int dataIter = 0;
-			for (Data d : model.getList()) {
+			for (Data d : list) {
 				double value = d.getValues()[iter];
-				value = getHeight() - upperBorder * 2 - yratio * (value - min) ;
+				value = getHeight() - upperBorder * 2 - yratio * (value - min);
 
 				points[dataIter] = new Rectangle2D.Double(xpos - 1, value, 3, 3);
 				dataIter++;
@@ -92,31 +97,30 @@ public class View extends JPanel {
 	public void paint(Graphics g) {
 
 		if (dragLabel) {
+			// data points
 			for (Rectangle2D.Double rect : axes.get(draggedLabel)) {
-				rect.setRect(rect.getX() + xOffset - oldXOffset, rect.getY(), rect.getWidth(), rect.getHeight());
+				rect.setRect(rect.getX() + xOffset - oldXOffset, rect.getY(),
+						rect.getWidth(), rect.getHeight());
 			}
-			for (Rectangle2D.Double rect : selectionRectangles.keySet()) {
-				if (rect == selectedRectangle) {
-					selectionRectangles.remove(rect);
-					rect.setRect(selectedRectangle.getX() + xOffset - oldXOffset, selectedRectangle.getY(), selectedRectangle.getWidth(), selectedRectangle.getHeight());
-					selectionRectangles.put(rect, draggedLabel);
-					break;
-				}
-			}
-//			sectionRectangles.remove()
-	
-		} 
+			// yellow rectangle
+			labelSelectionRectMap.get(draggedLabel).setRect(
+					selectedRectangle.getX() + xOffset - oldXOffset,
+					selectedRectangle.getY(), selectedRectangle.getWidth(),
+					selectedRectangle.getHeight());
+
+			// sectionRectangles.remove()
+
+		}
 
 		if (width != getWidth() || height != getHeight()) {
 			initialize();
 		}
 
 		Graphics2D g2D = (Graphics2D) g;
-		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.clearRect(0, 0, getWidth(), getHeight());
 
-		g2D.setColor(Color.WHITE);
-		g2D.fill(cell);
 		g2D.setColor(Color.RED);
 		g2D.fill(dataPoint);
 		g2D.setColor(Color.BLACK);
@@ -131,52 +135,57 @@ public class View extends JPanel {
 		int ypos = upperBorder;
 		int iter = 0;
 		String lastLabel = "";
+
 		for (String label : properties) {
+			Rectangle2D.Double selectionRect = labelSelectionRectMap.get(label);
+			g2D.setColor(Color.YELLOW);
+			g2D.fill(selectionRect);
+			g2D.setColor(Color.BLACK);
+			g2D.draw(selectionRect);
+
 			// labels
 			g2D.setColor(Color.BLACK);
 			g2D.drawLine(xpos, ypos, xpos, getHeight() - upperBorder * 2);
-			g2D.drawString(label, xpos - label.length() * 2.5f, getHeight() - upperBorder);
-			for (Rectangle2D.Double rect : selectionRectangles.keySet()){
-				g2D.setColor(Color.YELLOW);
-				g2D.fill(rect);
-				g2D.setColor(Color.BLACK);
-				g2D.draw(rect);
-				
-			}
+			g2D.drawString(label, xpos - label.length() * 2.5f, getHeight()
+					- upperBorder);
 
 			// ranges
 			double min = ranges.get(iter).getMin();
 			double max = ranges.get(iter).getMax();
 			String lowerLimit = "" + min;
 			String upperLimit = "" + max;
-			g2D.drawString(lowerLimit, xpos - lowerLimit.length() * 2.5f, getHeight() - upperBorder * 2 + 14);
-			g2D.drawString(upperLimit, xpos - upperLimit.length() * 2.5f, ypos - 6);
+			g2D.drawString(lowerLimit, xpos - lowerLimit.length() * 2.5f,
+					getHeight() - upperBorder * 2 + 14);
+			g2D.drawString(upperLimit, xpos - upperLimit.length() * 2.5f,
+					ypos - 6);
 
 			// data
 			for (int dataIter = 0; dataIter < properties.size(); dataIter++) {
-
 				g2D.fill(dataPoint);
 				dataPoint.setRect(axes.get(label)[dataIter]);
 				g2D.draw(dataPoint);
 				g2D.setColor(Color.BLUE);
 
-				if (chosen != null) {
-					if (markerRectangle.contains(axes.get(label)[dataIter])) {
-						g2D.setColor(Color.RED);
-					} else {
-						for (String axis : axes.keySet()) {
-							Rectangle2D.Double rect = axes.get(axis)[dataIter];
-							if (markerRectangle.contains(rect)) {
-								g2D.setColor(Color.RED);
-								break;
-							}
+				// marked data
+				if (markerRectangle.contains(axes.get(label)[dataIter])) {
+					g2D.setColor(Color.RED);
+				} else {
+					// check if object has marked attributes
+					for (int idx = 0; idx < axes.keySet().size(); idx++) {
+						Rectangle2D.Double rect = axes.get(properties.get(idx))[dataIter];
+						if (markerRectangle.contains(rect)) {
+							g2D.setColor(Color.RED);
+							break;
 						}
 					}
 				}
 
+				// connection lines
 				if (iter > 0) {
-					g2D.drawLine((int) axes.get(lastLabel)[dataIter].getX(), (int) axes.get(lastLabel)[dataIter].getY(),
-							(int) axes.get(label)[dataIter].getX(), (int) axes.get(label)[dataIter].getY());
+					g2D.drawLine((int) axes.get(lastLabel)[dataIter].getX(),
+							(int) axes.get(lastLabel)[dataIter].getY(),
+							(int) axes.get(label)[dataIter].getX(),
+							(int) axes.get(label)[dataIter].getY());
 					g2D.setColor(Color.BLACK);
 				}
 
@@ -193,45 +202,84 @@ public class View extends JPanel {
 
 	}
 
-	public void checkAxes(){
-//		System.out.println("checking Axes!!!!!!!!!!!");
-		int upperBorder = 30;
+	public void checkAxes() {
 		int leftBorder = 60;
 		int numProperties = properties.size();
-		
+
 		int distance = (getWidth() - 2 * leftBorder) / (numProperties - 1);
-		
+
 		int xpos = leftBorder;
-//		int ypos = upperBorder;
-//		int iter = 0;
-//		String lastLabel = "";
 		int idx_draggedLabel = properties.indexOf(draggedLabel);
 		for (String label : properties) {
 			if (!label.equals(draggedLabel)) {
-				if (idx_draggedLabel * distance + xpos + oldXOffset <= properties.indexOf(label) * distance + xpos) {
-					String lastLabel = draggedLabel;
-					String tmpLabel = "";
-					
-					Range lastRange = ranges.get(idx_draggedLabel);
-					Range tmpRange = ranges.get(idx_draggedLabel);
-					
-					for (int i = properties.indexOf(label); i <= idx_draggedLabel; i++) {
-//						System.out.println(i + "   ");
-//						System.out.println(lastLabel);
-						tmpLabel = properties.get(i);
-//						System.out.println(tmpLabel);
-						properties.set(i, lastLabel);
-//						System.out.println(tmpLabel);
-						lastLabel = tmpLabel;
-//						System.out.println(lastLabel);
-						
-						tmpRange = ranges.get(i);
-						ranges.set(i, lastRange);
-						lastRange = tmpRange;
-//						System.out.println(ranges);
-						
+				if (oldXOffset < 0) {
+					if (idx_draggedLabel * distance + xpos + oldXOffset <= properties.indexOf(label) * distance + xpos) {
+
+						for (Data d : list) {
+							double last = d.getValues()[idx_draggedLabel];
+							double tmp = 0.0;
+
+							for (int i = properties.indexOf(label); i <= idx_draggedLabel; i++) {
+								tmp = d.getValues()[i];
+								d.getValues()[i] = last;
+								last = tmp;
+
+							}
+
+						}
+
+						String lastLabel = draggedLabel;
+						String tmpLabel = "";
+
+						Range lastRange = ranges.get(idx_draggedLabel);
+						Range tmpRange = ranges.get(idx_draggedLabel);
+
+						for (int i = properties.indexOf(label); i <= idx_draggedLabel; i++) {
+							tmpLabel = properties.get(i);
+							properties.set(i, lastLabel);
+							lastLabel = tmpLabel;
+
+							tmpRange = ranges.get(i);
+							ranges.set(i, lastRange);
+							lastRange = tmpRange;
+
+						}
+
+						break;
 					}
-					break;
+				} else {
+					if ((idx_draggedLabel * distance + xpos + oldXOffset > properties.indexOf(label) * distance + xpos) && properties.indexOf(label) > idx_draggedLabel	) {
+						for (int iter = list.size() - 1; iter >= 0; iter--) {
+							Data d = list.get(iter);
+							double last = d.getValues()[idx_draggedLabel];
+							double tmp = 0.0;
+
+							for (int i = properties.indexOf(label); i >= idx_draggedLabel; i--) {
+								tmp = d.getValues()[i];
+								d.getValues()[i] = last;
+								last = tmp;
+							}
+						}
+
+						String lastLabel = draggedLabel;
+						String tmpLabel = "";
+
+						Range lastRange = ranges.get(idx_draggedLabel);
+						Range tmpRange = ranges.get(idx_draggedLabel);
+
+						for (int i = properties.indexOf(label); i >= idx_draggedLabel; i--) {
+							tmpLabel = properties.get(i);
+							properties.set(i, lastLabel);
+							lastLabel = tmpLabel;
+
+							tmpRange = ranges.get(i);
+							ranges.set(i, lastRange);
+							lastRange = tmpRange;
+
+						}
+
+						break;
+					}
 				}
 
 			}
@@ -253,16 +301,10 @@ public class View extends JPanel {
 		this.model = model;
 	}
 
-	public void clearData() {
-		chosen = new boolean[model.getList().size()];
-	}
-
 	public Rectangle2D getMarkerRectangle() {
 		return markerRectangle;
 	}
 
-	public Map<Rectangle2D.Double, String> getSelectionRectangle() {
-		return selectionRectangles;
-	}
+
 
 }

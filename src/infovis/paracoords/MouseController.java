@@ -28,15 +28,14 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mousePressed(MouseEvent e) {
-		view.clearData();
 		
-		Map<Rectangle2D.Double, String> map = view.getSelectionRectangle();
-		for (Rectangle2D.Double rect : map.keySet()) {
+		for (String label : view.labelSelectionRectMap.keySet()) {
+			Rectangle2D.Double rect = view.labelSelectionRectMap.get(label);
 			if (rect.contains(e.getX(), e.getY())) {
 //				view.selectionRectangles.remove(rect);
 				view.selectedRectangle = rect;
 				view.dragLabel = true;
-				view.draggedLabel = map.get(rect);
+				view.draggedLabel = label;
 				clickedX = e.getX();
 				view.oldXOffset = 0.0;
 				return;

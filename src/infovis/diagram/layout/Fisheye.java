@@ -14,14 +14,17 @@ import java.util.Iterator;
  */
 
 public class Fisheye implements Layout{
+	
+	private double [] oldTranslateX;
+	private double [] oldTranslateY;
+	private double [] oldScaleX;
+	private double [] oldScaleY;
 
 	public void setMouseCoords(int x, int y, View view) {
 		// TODO Auto-generated method stub
 	}
 
 	public Model transform(Model model, View view, int x, int y) {
-		
-		
 		
 		System.out.println("HAAAALLLLLOOOO");
 		for (Vertex vertex: model.getVertices()){
@@ -40,10 +43,10 @@ public class Fisheye implements Layout{
 		
 
 		if (pNorm > pFocus) {
-			System.out.println("Fall 1");
+//			System.out.println("Fall 1");
 			dMax = screenBoundary - pFocus;
 		} else if ( pNorm < pFocus) {
-			System.out.println("Fall 2");
+//			System.out.println("Fall 2");
 			dMax = - pFocus;
 		}  else {
 			return pNorm;
@@ -62,7 +65,7 @@ public class Fisheye implements Layout{
 		double qFish = fishTranslate(qNorm, pFocus, screenBoundary, d); //TODO augment pNorm
 		
 		double sGeom = 2 * Math.min(Math.abs(qFish - fishTranslate(pNorm, pFocus, screenBoundary, d)), Math.abs(fishTranslate(pNorm, pFocus, screenBoundary, d) - qFish)); //unaugmented pNorm
-		System.out.println(sGeom);
+//		System.out.println(sGeom);
 		return sGeom;
 	}
 

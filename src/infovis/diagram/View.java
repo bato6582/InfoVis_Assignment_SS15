@@ -25,6 +25,14 @@ public class View extends JPanel{
 
 	private Rectangle2D marker = new Rectangle2D.Double();
     private Rectangle2D overviewRect = new Rectangle2D.Double();
+    private Rectangle2D windowRect = new Rectangle2D.Double();
+    
+    public double border = 40;
+    public double windowOffsetX;
+    public double windowOffsetY;
+    public double oldWindowOffsetX;
+    public double oldWindowOffsetY;
+
 
 	public Model getModel() {
 		return model;
@@ -56,16 +64,23 @@ public class View extends JPanel{
 		System.out.println(translateX + " , " + translateY);
 		
 		
-		//overview
+		// window
 		g2D.scale(0.25/scale, 0.25/scale);
-		g2D.translate((old_translateX + translateX)*scale*4, 4*scale*(old_translateY + translateY));
-		overviewRect.setRect(0,0, getWidth(), getHeight());
+		g2D.translate((old_translateX + translateX)*scale*4, 4*scale* (old_translateY + translateY));
+		windowRect.setRect((windowOffsetX + oldWindowOffsetX) * 4, (windowOffsetY + oldWindowOffsetY) * 4, getWidth() + border * 2, getHeight() + border * 2);
+		g2D.setColor(Color.BLACK);
+		g2D.fill(windowRect);
+		g2D.draw(windowRect);
+		
+		//overview
+		overviewRect.setRect((windowOffsetX + oldWindowOffsetX) * 4 + border, (windowOffsetY + oldWindowOffsetY) * 4 + border, getWidth(), getHeight());
 		g2D.setColor(Color.WHITE);
 		g2D.fill(overviewRect);
 		g2D.setColor(Color.BLACK);
 		g2D.draw(overviewRect);
 		
 		//overview data
+		g2D.translate((windowOffsetX + oldWindowOffsetX) * 4 + border, (windowOffsetY + oldWindowOffsetY) * 4 + border);
 		paintDiagram(g2D);
 		
 		//marker
@@ -74,7 +89,7 @@ public class View extends JPanel{
 		g2D.translate(translateX * scale, translateY * scale);
         //marker.setRect(marker.getX(), marker.getY(), getWidth(), getHeight());
         //marker.setRect(marker.getMinX(), marker.getMinY(), getWidth(), getHeight());
-        marker.setRect(old_translateX, old_translateY, getWidth(), getHeight());
+        marker.setRect(old_translateX * scale, old_translateY * scale, getWidth(), getHeight());
 //        System.out.println("min: " + marker.getX());
         g2D.setColor(Color.RED);
 		g2D.draw(marker);
@@ -108,8 +123,8 @@ public class View extends JPanel{
 	public double getTranslateY() {
 		return translateY;
 	}
-	public void setTranslateY(double tansslateY) {
-		this.translateY = tansslateY;
+	public void setTranslateY(double translateY) {
+		this.translateY = translateY;
 	}
 	public void updateTranslation(double x, double y){
 		setTranslateX(x);
@@ -124,8 +139,14 @@ public class View extends JPanel{
 	public boolean markerContains(double x, double y){
 		return marker.contains(x, y);
 	}
-
-
+	
+	public boolean windowContains(double x, double y){
+		return windowRect.contains(x, y);
+	}
+	
+	public boolean overviewContains(double x, double y){
+		return overviewRect.contains(x, y);
+	}
 
     public void setOldTranslateX(double translateX) {
         this.old_translateX = translateX;
@@ -147,6 +168,7 @@ public class View extends JPanel{
     public double getOldTranslateY(){
     	return old_translateY;
     }
+    
 
 
 
