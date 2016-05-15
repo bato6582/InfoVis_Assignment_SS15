@@ -26,12 +26,12 @@ public class Fisheye implements Layout{
 
 	public Model transform(Model model, View view, int x, int y) {
 		
-		System.out.println("HAAAALLLLLOOOO");
+//		System.out.println("HAAAALLLLLOOOO");
 		for (Vertex vertex: model.getVertices()){
-			vertex.setX(fishTranslate(vertex.getCenterX(), x, view.getWidth(), view.getScale()) - vertex.getWidth() * 0.5);
-			vertex.setY(fishTranslate(vertex.getCenterY(), y, view.getHeight(), view.getScale()) - vertex.getHeight() * 0.5);
-			vertex.setWidth(fishScale(vertex.getX(), vertex.getCenterX(), x, view.getWidth(), view.getScale()));
-			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), y, view.getHeight(), view.getScale()));
+			vertex.setX(fishTranslate(vertex.getCenterX() , x / view.getScale(), view.getWidth(), view.getScale()) - vertex.getWidth() * 0.5 * view.getScale());
+			vertex.setY(fishTranslate(vertex.getCenterY() , y / view.getScale(), view.getHeight(), view.getScale()) - vertex.getHeight() * 0.5 * view.getScale());
+			vertex.setWidth(fishScale(vertex.getX() , vertex.getCenterX(), x/ view.getScale() , view.getWidth(), view.getScale()));
+			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), y/ view.getScale() , view.getHeight(), view.getScale()));
 		}
 		return model;
 	}
