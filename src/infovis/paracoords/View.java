@@ -248,13 +248,13 @@ public class View extends JPanel {
 						break;
 					}
 				} else {
-					if ((idx_draggedLabel * distance + xpos + oldXOffset > properties.indexOf(label) * distance + xpos) && properties.indexOf(label) > idx_draggedLabel	) {
+					if ((idx_draggedLabel * distance + xpos + oldXOffset < properties.indexOf(label) * distance + xpos) && properties.indexOf(label) > idx_draggedLabel	) {
 						for (int iter = list.size() - 1; iter >= 0; iter--) {
 							Data d = list.get(iter);
 							double last = d.getValues()[idx_draggedLabel];
 							double tmp = 0.0;
 
-							for (int i = properties.indexOf(label); i >= idx_draggedLabel; i--) {
+							for (int i = properties.indexOf(label) - 1; i >= idx_draggedLabel; i--) {
 								tmp = d.getValues()[i];
 								d.getValues()[i] = last;
 								last = tmp;
@@ -267,7 +267,7 @@ public class View extends JPanel {
 						Range lastRange = ranges.get(idx_draggedLabel);
 						Range tmpRange = ranges.get(idx_draggedLabel);
 
-						for (int i = properties.indexOf(label); i >= idx_draggedLabel; i--) {
+						for (int i = properties.indexOf(label) - 1; i >= idx_draggedLabel; i--) {
 							tmpLabel = properties.get(i);
 							properties.set(i, lastLabel);
 							lastLabel = tmpLabel;
@@ -284,7 +284,7 @@ public class View extends JPanel {
 
 			}
 		}
-		System.out.println(properties);
+//		System.out.println(properties);
 		initialize();
 	}
 

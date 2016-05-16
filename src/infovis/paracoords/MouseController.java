@@ -52,7 +52,9 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		view.oldXOffset = view.xOffset;
 		view.xOffset = 0.0;
 //		System.out.println("HIIIIII");
-		view.checkAxes();
+		if (!view.draggedLabel.equals("")) {
+			view.checkAxes();
+		}
 		view.repaint();
 	}
 
