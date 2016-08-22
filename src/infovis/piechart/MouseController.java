@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 public class MouseController implements MouseListener, MouseMotionListener {
+
 	
 	
 	private View view = null;
@@ -30,6 +31,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 				
 			}
 		}
+
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -42,15 +44,14 @@ public class MouseController implements MouseListener, MouseMotionListener {
 
 	public void mousePressed(MouseEvent e) {
 		
+
 		if (view.timeline_rectangle.contains(e.getX(), e.getY())) {
 			view.change_time = true;
 			clicked_x = e.getX();
 			clicked_y = e.getY();
 		}
 		
-		
 
-		
 		//Iterator<Data> iter = model.iterator();
 		view.getMarkerRectangle().setRect(e.getX(), e.getY(), 0, 0);
 		view.repaint();
@@ -61,6 +62,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseDragged(MouseEvent e) {
+
 		
 		double distance_x = e.getX() - clicked_x;
 		double distance_y = e.getY() - clicked_y;
@@ -86,6 +88,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 //			rect.setRect(rect.getMinX(), rect.getMinY(),
 //					e.getX() - rect.getMinX(), e.getY() - rect.getMinY());
 		
+
 		view.repaint();
 	}
 

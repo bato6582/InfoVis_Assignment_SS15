@@ -20,9 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+
 import javax.swing.JPanel;
 
 public class View extends JPanel {
+
 
 	public Rectangle2D timeline_rectangle = new Rectangle2D.Double(0, 0, 0, 0);
 	private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
@@ -41,10 +43,12 @@ public class View extends JPanel {
 	public boolean new_category = false;
 	public String[] labels;
 	
+
 	public double xOffset = 0.0;
 	public double oldXOffset = 0.0;
 	public String draggedLabel = "";
 	public boolean dragLabel = false;
+
 	public int timeline_x_start = 50;
 	public int timeline_x_end= 0;
 	public int timeline_y = 0;
@@ -78,13 +82,13 @@ public class View extends JPanel {
 		int timeline_y = height - 50;
 		pixel_per_year = (width - 100) / (double) (2015 - 1950 + 1);
 		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
-//		printData();
-		//
+
 		
 		
 		
 	}
 	
+
 	private void printData() {
 //		for (int key = 1950; key < 2016; key++) {
 		for (int key: data_map.keySet()) {
@@ -148,10 +152,12 @@ public class View extends JPanel {
 		}
 
 		reader.close();
+
 	}
 
 	@Override
 	public void paint(Graphics g) {
+
 		timeline_x_end = width - timeline_x_start;
 
 		boolean size_changed = (width != getWidth() || height != getHeight());
@@ -160,10 +166,12 @@ public class View extends JPanel {
 		timeline_y = height - 50;
 		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
 		System.out.println((width - 100) +  " " + pixel_per_year);
+
 		
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
+
 		g2D.clearRect(0, 0, width, height);
 //
 //		g2D.setColor(Color.RED);
@@ -283,6 +291,7 @@ public class View extends JPanel {
 		g2D.draw(markerRectangle);
 
 	}
+
 	
 
 	
@@ -383,7 +392,6 @@ public class View extends JPanel {
 
 	}
 	
-	
 
 	public Point2D.Double rotatePoint(Point2D.Double point, Point2D.Double center, double angle) {
 		angle *= Math.PI / 180;
@@ -392,6 +400,7 @@ public class View extends JPanel {
 		return new Point2D.Double(x, y);
 	}
 	
+
 	
 	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels) throws IOException {
 
@@ -467,6 +476,7 @@ public class View extends JPanel {
 	}
 	
 	
+
 	@Override
 	public void update(Graphics g) {
 		paint(g);
