@@ -285,8 +285,9 @@ public class View extends JPanel {
 				
 			} else {
 				g2D.drawString(dirs[i], x_left_column + 10, 38 + 15 * (i + 1));
-				g2D.drawString("" + (Math.round(getSegmentOnLevel(i - 1, dirs[i]).percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));
-				
+				if (((i-1) % 2) == 0) { // not categoric
+					g2D.drawString("" + (Math.round(getSegmentOnLevel(i - 1, dirs[i]).percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));	
+				}				
 				
 			}
 			
