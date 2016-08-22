@@ -1,6 +1,5 @@
 package infovis.piechart;
 
-<<<<<<< HEAD
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -277,39 +276,3 @@ public class Data {
 	
 	
 }
-=======
-public class Data {
-	
-	public Pair number = new Pair();
-	public Pair male = new Pair();
-	public Pair female = new Pair();
-	
-	// birth information
-	
-	
-	// death information
-	
-	
-	public void setBirth(int male, int female, int number) {
-		this.number.birth = number;
-		this.male.birth = male;
-		this.female.birth = female;
-	}
-	
-	
-	public void setDeath(int male, int female, int number) {
-		this.number.death = number;
-		this.male.death = male;
-		this.female.death = female;
-	}
-	
-	
-	public String print() {
-		String result = "number: " + number.print();
-		result += "male: " + male.print();
-		result += "female: " + female.print();
-		return result;
-	}
-	
-}
->>>>>>> 6c1fcd73997e10b62aff6083292e7bb6ae9bd5f6

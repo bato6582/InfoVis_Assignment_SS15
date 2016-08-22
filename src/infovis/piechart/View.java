@@ -54,6 +54,7 @@ public class View extends JPanel {
 	public int timeline_y = 0;
 	public double pixel_per_year = 0;
 	
+	public int max_level = 5;
 	public int level = 0;
 	
 	//<level, segments>
@@ -220,7 +221,7 @@ public class View extends JPanel {
 		g2D.drawLine(width - 140, 40, x_right_column, 40 + 15 * dirs.length);
 		
 		
-		
+		System.out.println("path " + current_tree_path);
 		for (int i = dirs.length - 1; i >= 0; i--) {
 			
 			
@@ -229,6 +230,7 @@ public class View extends JPanel {
 				new_tree_path += dirs[j] +"/";
 			}
 			level = i;
+			System.out.println("level " + level);
 			double[] percentages = getPercentages(data_map.get(year), new_tree_path); //changes colors
 			
 			if (i == 0) {
@@ -281,6 +283,7 @@ public class View extends JPanel {
 			}
 		}
 		level = dirs.length - 1;
+		System.out.println("HIERRRRRR " + level);
 		
 		g2D.setColor(Color.BLACK);
 		g2D.fill(timeline_rectangle);
@@ -443,24 +446,25 @@ public class View extends JPanel {
 	}
 
 	public void clicked(String label, int lvl) {
-		System.out.println("\n New Segment clicked " + label);
+		System.out.println("									PATH before: " + current_tree_path + "		LEVEL before: " + level);
 		String[] dirs = current_tree_path.split("/");
-		System.out.println("PATH before: " + current_tree_path);
-		if(lvl ==  dirs.length - 1){
-			current_tree_path += label + "/";			
-//			level++;
-		} else {
+		
+		if (lvl == dirs.length - 1) { // new level
+			if (lvl < max_level - 1) {
+				current_tree_path += label + "/";
+				level++;				
+			}
+		} else { // jump back to chosen former level
 			current_tree_path = "";
 			for (int i = 0; i <= lvl; i++) {
 				current_tree_path += dirs[i] + "/";
 			}
 			level = lvl;
 		}
-		System.out.println("PATH after: " + current_tree_path);
-		//current_tree_path += "/" + s.label;
-		// check if new children and if categoric
-//		ArrayList<Segment> children = s.chrildren;
+		
+		System.out.println("									PATH after: " + current_tree_path + "		LEVEL after: " + level);
 	}
+	
 	
 	public Segment getSegmentOnLevel (int lvl, String label) {
 		for (Segment seg : segments.get(lvl)) {

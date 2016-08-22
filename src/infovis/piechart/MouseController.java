@@ -20,11 +20,18 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	private double clicked_y = 0.0;
 	
 	public void mouseClicked(MouseEvent e) {
+		boolean break_loop = false;
+		
 		for (int i = 0; i <= view.level; i++) {
+			if(break_loop) {
+				break;
+			}
+			
 			if (view.segments.containsKey(i)) {
 				for (Segment s : view.segments.get(i)) {
 					if (s.poly.contains(e.getX(), e.getY())) {
 						view.clicked(s.label, i);
+						break_loop = true;
 						break;
 					}
 				}
