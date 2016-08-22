@@ -1,25 +1,18 @@
 package infovis.piechart;
 
-import sun.nio.ch.SelChImpl;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-
 
 import javax.swing.JPanel;
 
@@ -58,47 +51,41 @@ public class View extends JPanel {
 	public HashMap< Integer, ArrayList<Segment>> segments = new HashMap<Integer, ArrayList<Segment>>();
 	
 	private static String path_birth = "data/Geburten_Monat_Sex_1950-2015.csv";
-	private static String path_death = "data/Tode_Monat_Sex_1950-2015.csv";
+//	private static String path_death = "data/Tode_Monat_Sex_1950-2015.csv";
 	private static HashMap<Integer, HashMap<String, Data>> data_map = new HashMap<>();
 	
 	private static Data root = null;
 
 	private static String current_tree_path = "root/";
 	
-	
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
+	
+	
 	public void initialize() throws IOException {
-		readFile();
-		
-		
 		width = getWidth();
 		height = getHeight();
+		
 		timeline_y = height - 50;
-		
-		
-		int timeline_y = height - 50;
 		pixel_per_year = (width - 100) / (double) (2015 - 1950 + 1);
+		
 		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
-
 		
-		
-		
+		readData();
+		//printData();
 	}
 	
 
 	private void printData() {
-//		for (int key = 1950; key < 2016; key++) {
-		for (int key: data_map.keySet()) {
-			HashMap<String, Data> map = data_map.get(key);
-			System.out.println("year: " + key);
+		for (int year: data_map.keySet()) {
+			HashMap<String, Data> map = data_map.get(year);
+			System.out.println("year: " + year);
 			
-			for (String month : months_ordered){
-//			for (String month : map.keySet()){
-				//TODO: Catch if month missing
-				Data data = map.get(month);
-//				System.out.println("Monat: " + month + ": " + data.print());
-				
+			for (String key : map.keySet()){
+				Data data = map.get(key);
+				if (data != null) {
+					System.out.println(data.print());	
+				}				
 			}
 		}
 	}
@@ -123,36 +110,31 @@ public class View extends JPanel {
 		}	
 	}
 
-	private static void readFile() throws IOException {
-				
-		// load birth data
+	private static void readData() throws IOException {
+		// load years and create data (data will be filled recursively in Data)
 		BufferedReader reader = new BufferedReader(new FileReader(path_birth));
 		String line = null;
 		
-		int year_new = 0;
+		int new_year = 0;
 		int old_year = 0;
+		
 		while ((line = reader.readLine()) != null) {
-			String[] words = line.split(";");
-			if (words[0].equals("year")) {
-				//
-			} else {
-				year_new = Integer.parseInt(words[0]);
-				if(year_new != old_year){
+			String data = line.split(";")[0];
+			if (!data.equals("year")) {
+				new_year = Integer.parseInt(data);
+				if (new_year != old_year){
 					HashMap<String, Data> map = new HashMap<>();
-					Data birth = new Data(year_new, "birth");
-					map.put("birth", birth);
-					Data death = new Data(year_new, "death");
-					map.put("death", death);
-					data_map.put(year_new,map);
+					map.put("birth", new Data(new_year, "birth"));
+					map.put("death", new Data(new_year, "death"));
+					data_map.put(new_year, map);
 				}
-				old_year = year_new;
+				old_year = new_year;
 			}
 		}
-
 		reader.close();
-
 	}
 
+	
 	@Override
 	public void paint(Graphics g) {
 		boolean size_changed = (width != getWidth() || height != getHeight());
@@ -174,6 +156,7 @@ public class View extends JPanel {
 //		g2D.setColor(Color.RED);
 //		g2D.fill(dataPoint);
 		
+		
 		// ********** TIMELINE ********** //
 		g2D.setColor(Color.BLACK);
 		g2D.drawLine(50, timeline_y, width - 50, timeline_y);
@@ -191,12 +174,6 @@ public class View extends JPanel {
 			// TODO: Richtig, dass das alte Jahr verwendet wird???
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
 		}
-
-		// ********** RADIUS ********** //
-		double radius = min(width, height) * 0.5 - 100;
-		double max_radius = radius;
-		double next_radius = radius;
-
 
 		
 		// ********** YEAR ********** //
@@ -217,9 +194,15 @@ public class View extends JPanel {
 		g2D.drawLine(width - 140, 40, x_right_column, 40 + 15 * dirs.length);
 		
 		
+		// ********** RADIUS ********** //
+		double radius = min(width, height) * 0.5 - 100;
+		double max_radius = radius;
+		double next_radius = radius;
+
 		// ********** SEGMENTS ********** //
 		System.out.println("Path: \"" + current_tree_path + "\"; Level: " + level);
 		for (int i = dirs.length - 1; i >= 0; i--) {
+			// draw segments that are bigger at first to avoid overlaying information
 			String new_tree_path = "";
 			for (int j = 0; j <= i; j++ ) {
 				new_tree_path += dirs[j] +"/";
@@ -382,7 +365,6 @@ public class View extends JPanel {
 				return numbers;
 			}
 		}
-
 	}
 	
 
@@ -401,7 +383,6 @@ public class View extends JPanel {
 		ArrayList<Segment> tmp = new ArrayList<Segment>();
 		Color clr = new Color(255, 128, 0);
 		
-		// 765 = 3 * 255
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 //		System.out.println("Color: " + color_gradient);
 		
@@ -415,7 +396,6 @@ public class View extends JPanel {
 		}
 		
 	
-
 		segments.put(level, tmp);
 
 		for (Segment s : segments.get(level)) {
@@ -440,7 +420,7 @@ public class View extends JPanel {
 	}
 
 	public void clicked(String label, int lvl) {
-		//System.out.println("									PATH before: " + current_tree_path + "		LEVEL before: " + level);
+		//System.out.println("PATH before: " + current_tree_path + "		LEVEL before: " + level);
 		String[] dirs = current_tree_path.split("/");
 		
 		if (lvl == dirs.length - 1) { // new level
@@ -456,7 +436,7 @@ public class View extends JPanel {
 			level = lvl;
 		}
 		
-		//System.out.println("									PATH after: " + current_tree_path + "		LEVEL after: " + level);
+		//System.out.println("PATH after: " + current_tree_path + "		LEVEL after: " + level);
 		System.out.println();
 	}
 	

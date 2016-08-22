@@ -280,6 +280,16 @@ public class Data {
 	}
 	
 	
+	public String print() {
+		String print = "Name: " + name + " Values: " + values;
+		for (String key : children.keySet()) {
+			Data child = children.get(key);
+			if (child != null) {
+				print += "	" + child.print();				
+			}
+		}
+		return print;
+	}
 	
 	
 }
