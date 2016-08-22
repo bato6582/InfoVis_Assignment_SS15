@@ -444,9 +444,11 @@ public class View extends JPanel {
 		
 		for (Segment s : segments.get(level)) {
 			g2D.setColor(new Color(255 - s.color.getRed(), 255 - s.color.getGreen(), 255 - s.color.getBlue()));
-			String string = s.label + " " +  Math.round(s.percent*1000) / 10.0 + " %";
+			String string = s.label;
 			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
+			string = Math.round(s.percent*1000) / 10.0 + " %";
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
 			g2D.setColor(s.color);
 		}
 	}
