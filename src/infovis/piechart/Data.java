@@ -57,6 +57,8 @@ public class Data {
 		if (parent_list.contains(name)) {
 			System.out.println("List contains Name");
 			return;
+		} else if ((name.equals("male") || name.equals("female")) && parent_list.contains("sex")) {
+
 		} else {			
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
 			new_parent_list.add(name);

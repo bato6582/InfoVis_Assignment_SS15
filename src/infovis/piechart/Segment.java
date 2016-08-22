@@ -48,7 +48,7 @@ public class Segment {
 	
 	/**/
 	
-	public void createPolygon (Point2D.Double center, double radius , double step_number, double angle, int number_labels) {
+	public void createPolygon (Point2D.Double center, double radius , double step_number, double angle, int number_labels, double next_radius) {
 //		step_number *= percent;
 		
 		double rotation_angle;
@@ -78,18 +78,18 @@ public class Segment {
 			
 			// draw label
 			if (i == label_pos_to_be) {
-				double x;
-				double y;
-				if (center.getX() > point3.getX()) {
-					x = 0.5 * (center.getX() + point3.getX());
-				} else {
-					x = 0.5 * (center.getX() + point3.getX());				
-				}
-				if (center.getY() > point3.getY()) {
-					y = 0.5 * (center.getY() + point3.getY());
-				} else {
-					y = 0.5 * (center.getY() + point3.getY());				
-				}
+				double x = center.getX() - point3.getX();
+				double y = center.getY() - point3.getY();
+				double length = Math.sqrt(x*x + y*y);
+				x /= length;
+				y /= length;
+				double distance_from_center = next_radius >= 0 ? (0.5*(radius + next_radius)) : 0.5 * radius;
+				System.out.println(label + ": X: " + x + "  Y: " + y + "  distance: " + distance_from_center);
+				System.out.println("radius: " + radius + "  prev_radius:" + next_radius);
+				x = center.getX() - (x) * distance_from_center;
+
+				y = center.getY() - (y) * distance_from_center;
+				
 				label_pos = new Point2D.Double(x, y);
 			}
 		}
