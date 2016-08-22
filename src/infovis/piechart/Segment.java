@@ -84,8 +84,8 @@ public class Segment {
 				x /= length;
 				y /= length;
 				double distance_from_center = next_radius >= 0 ? (0.5*(radius + next_radius)) : 0.5 * radius;
-				System.out.println(label + ": X: " + x + "  Y: " + y + "  distance: " + distance_from_center);
-				System.out.println("radius: " + radius + "  prev_radius:" + next_radius);
+				//System.out.println(label + ": X: " + x + "  Y: " + y + "  distance: " + distance_from_center);
+				//System.out.println("radius: " + radius + "  prev_radius:" + next_radius);
 				x = center.getX() - (x) * distance_from_center;
 
 				y = center.getY() - (y) * distance_from_center;

@@ -32,15 +32,12 @@ public class View extends JPanel {
 	public Rectangle2D.Double selectedRectangle;
 
 	private int width;
-	private int height;
-	
+	private int height;	
 	
 	public boolean change_time = false;
 	
 	public int year = 2015;
 
-	
-	public boolean new_category = false;
 	public String[] labels;
 	
 
@@ -122,7 +119,7 @@ public class View extends JPanel {
 			for (String number : percentages) {
 				System.out.print(number + ", ");
 			}
-			System.out.println("]");
+			System.out.print("]");
 		}	
 	}
 
@@ -158,30 +155,27 @@ public class View extends JPanel {
 
 	@Override
 	public void paint(Graphics g) {
-
-		timeline_x_end = width - timeline_x_start;
-
 		boolean size_changed = (width != getWidth() || height != getHeight());
 		width = getWidth();
 		height = getHeight();
-		timeline_y = height - 50;
-		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
-		System.out.println((width - 100) +  " " + pixel_per_year);
 
-		
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-
+				RenderingHints.VALUE_ANTIALIAS_ON);		
 		g2D.clearRect(0, 0, width, height);
+
+		timeline_x_end = width - timeline_x_start;
+		timeline_y = height - 50;
+		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
+//		System.out.println(width);
+//		System.out.println(height);
+		
 //
 //		g2D.setColor(Color.RED);
 //		g2D.fill(dataPoint);
 		
-		// timeline
+		// ********** TIMELINE ********** //
 		g2D.setColor(Color.BLACK);
-//		System.out.println(width);
-//		System.out.println(height);
 		g2D.drawLine(50, timeline_y, width - 50, timeline_y);
 		for (int i = 1950; i < 2017; i++) {
 			int x = (int) ( 50 + pixel_per_year * (i - 1950) );
@@ -193,26 +187,28 @@ public class View extends JPanel {
 			}
 		}
 		
-
-		
 		if (size_changed) {
+			// TODO: Richtig, dass das alte Jahr verwendet wird???
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
-
 		}
-		
 
-		// durch daten gehen
-		year = (int) (((timeline_rectangle.getX() - 50  + pixel_per_year * 0.5) / pixel_per_year + 1950));
-		g2D.drawString("" + year, width - 50, 15);
-//		System.out.println("year: " + year);
-		
-		
-		// DATA ****************
-		String[] dirs = current_tree_path.split("/");
+		// ********** RADIUS ********** //
 		double radius = min(width, height) * 0.5 - 100;
 		double max_radius = radius;
+		double next_radius = radius;
+
+
 		
-		//Table
+		// ********** YEAR ********** //
+		g2D.setColor(Color.BLACK);
+		year = (int) (((timeline_rectangle.getX() - 50  + pixel_per_year * 0.5) / pixel_per_year + 1950));
+		g2D.drawString("" + year, width - 50, 15);		
+		
+		
+		String[] dirs = current_tree_path.split("/");
+
+		// ********** TABLE ********** //
+		g2D.setColor(Color.BLACK);
 		int x_left_column = width - 240;
 		int x_right_column = width - 140;
 		g2D.drawLine(x_left_column, 40, width - 40, 40);
@@ -221,35 +217,20 @@ public class View extends JPanel {
 		g2D.drawLine(width - 140, 40, x_right_column, 40 + 15 * dirs.length);
 		
 		
-
-		double next_radius = radius;
-		
-
-		System.out.println("path " + current_tree_path);
-
+		// ********** SEGMENTS ********** //
+		System.out.println("Path: \"" + current_tree_path + "\"; Level: " + level);
 		for (int i = dirs.length - 1; i >= 0; i--) {
-			
-			
 			String new_tree_path = "";
 			for (int j = 0; j <= i; j++ ) {
 				new_tree_path += dirs[j] +"/";
 			}
 			level = i;
-			System.out.println("level " + level);
+			//System.out.println("level " + level);
 			double[] percentages = getPercentages(data_map.get(year), new_tree_path); //changes colors
 			
-			if (i == 0) {
-				System.out.println("Treepath: " + new_tree_path);
-				
-			}
-			System.out.print("Labels: ");
-			printArray(labels);
-
-			
-			System.out.print("Percentages: ");
-			printArray(percentages);
+//			printArray(labels);
+//			printArray(percentages);
 		
-			
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
 			double stepNumber = 360;
 			int fac = dirs.length - 1 - i;
@@ -262,7 +243,7 @@ public class View extends JPanel {
 				next_radius -= max_radius/(dirs.length);
 			}
 			
-			System.out.println("radius " + radius);
+			//System.out.println("radius " + radius);
 			try {
 				boolean categoric = (level % 2) == 0 ? false : true;
 				g2D.setColor(Color.BLACK);
@@ -299,8 +280,8 @@ public class View extends JPanel {
 		g2D.draw(timeline_rectangle);
 		
 		// marker rectangle
-		g2D.setColor(Color.GREEN);
-		g2D.draw(markerRectangle);
+//		g2D.setColor(Color.GREEN);
+//		g2D.draw(markerRectangle);
 
 	}
 
@@ -308,7 +289,7 @@ public class View extends JPanel {
 
 	
 	private double[] getPercentages(HashMap<String, Data> map, String new_current_tree_path){
-		System.out.println("New Path: " + new_current_tree_path);
+		//System.out.println("New Path: " + new_current_tree_path);
 		if (level % 2 == 1) {
 			String[] keys = new_current_tree_path.split("/");
 			
@@ -378,7 +359,7 @@ public class View extends JPanel {
 				// get Percentages
 				double sum = 0.0;
 				Set<String> key_set = data.getValues().keySet();
-				System.out.println(key_set);
+				//System.out.println(key_set);
 				double[] numbers = new double[key_set.size()];
 				
 				int iterator = 0;
@@ -459,7 +440,7 @@ public class View extends JPanel {
 	}
 
 	public void clicked(String label, int lvl) {
-		System.out.println("									PATH before: " + current_tree_path + "		LEVEL before: " + level);
+		//System.out.println("									PATH before: " + current_tree_path + "		LEVEL before: " + level);
 		String[] dirs = current_tree_path.split("/");
 		
 		if (lvl == dirs.length - 1) { // new level
@@ -475,7 +456,8 @@ public class View extends JPanel {
 			level = lvl;
 		}
 		
-		System.out.println("									PATH after: " + current_tree_path + "		LEVEL after: " + level);
+		//System.out.println("									PATH after: " + current_tree_path + "		LEVEL after: " + level);
+		System.out.println();
 	}
 	
 	

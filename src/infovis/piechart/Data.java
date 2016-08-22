@@ -46,7 +46,7 @@ public class Data {
 	
 	private void createChildren() throws IOException {
 //		System.out.println("Create Children path " + path);
-		System.out.println("Name: " + name + " Parent_list: " + parent_list);
+//		System.out.println("Name: " + name + " Parent_list: " + parent_list);
 		
 //		for (String month : months_ordered) {
 //			if (parent_list.contains(month)) {
@@ -85,17 +85,14 @@ public class Data {
 	private ArrayList<Data> getChildrenData(String word, ArrayList<String> new_parent_list) throws IOException {
 		ArrayList<Data> data = new ArrayList<>();
 		if (word.equals("year") || word.equals("number")) {
-			
+			return data;
 		} else if (name.equals("sex")) {
 			if (word.equals("male")) {
-				System.out.println("ADD: " + word);
 				data.add(new Data(year, level, "male", path, new_parent_list));								
 			} else if (word.equals("female")) {
-				System.out.println("ADD: " + word);
 				data.add(new Data(year, level, "female", path, new_parent_list));
 			}
 		} else if ((!name.equals("sex")) && word.equals("female") && !name.equals("female") && !name.equals("male")) {
-			System.out.println("ADD: sex");
 			data.add(new Data(year, level, "sex", path, new_parent_list));
 		
 		} else if ((!name.equals("sex")) && word.equals("male") && !name.equals("male") && !name.equals("female") ) {
@@ -105,7 +102,6 @@ public class Data {
 		} else if ((name.equals("female")) && word.equals("male") ) {
 
 		} else if ((name.equals("month"))) {
-			System.out.println("ADD: " + word);
 			data.add(new Data(year, level, "Januar", path, new_parent_list));				
 			data.add(new Data(year, level, "Februar", path, new_parent_list));			
 			data.add(new Data(year, level, "März", path, new_parent_list));			
@@ -121,8 +117,7 @@ public class Data {
 			
 			
 		} else {
-			if (!name.equals(word) && !parent_list.contains(word)) {							
-				System.out.println("General ADD: " + word + " to " + name);
+			if (!name.equals(word) && !parent_list.contains(word)) {
 				data.add(new Data(year, level, word, path, new_parent_list));
 			}
 		}
@@ -132,11 +127,8 @@ public class Data {
 	private boolean addName() {
 		boolean add = false;
 		if (parent_list.contains(name)) {
-			System.out.println("List contains Name");
 		} else if (name.equals("male") && parent_list.contains("female")) {
-			System.out.println("List contains Female");
 		} else if (name.equals("female") && parent_list.contains("male")) {
-			System.out.println("List contains Male");
 		} else {
 			add = true;
 		}
