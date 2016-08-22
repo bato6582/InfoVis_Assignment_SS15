@@ -237,10 +237,11 @@ public class View extends JPanel {
 				System.out.println("Treepath: " + new_tree_path);
 				
 			}
-			System.out.println("Labels: ");
-			printArray(labels);
+//			System.out.print("Labels: ");
+//			printArray(labels);
 
 			
+			System.out.print("Percentages: ");
 			printArray(percentages);
 		
 			
@@ -283,7 +284,6 @@ public class View extends JPanel {
 			}
 		}
 		level = dirs.length - 1;
-		System.out.println("HIERRRRRR " + level);
 		
 		g2D.setColor(Color.BLACK);
 		g2D.fill(timeline_rectangle);
