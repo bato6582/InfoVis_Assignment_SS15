@@ -220,6 +220,7 @@ public class View extends JPanel {
 		g2D.drawLine(width - 140, 40, x_right_column, 40 + 15 * dirs.length);
 		
 		
+		double next_radius = radius;
 		
 		for (int i = dirs.length - 1; i >= 0; i--) {
 			
@@ -245,6 +246,14 @@ public class View extends JPanel {
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
 			double stepNumber = 360;
 			int fac = dirs.length - 1 - i;
+
+			
+			radius = next_radius;
+			if(i == dirs.length - 1){
+				next_radius -= 30 + max_radius/(dirs.length);
+			} else {
+				next_radius -= max_radius/(dirs.length);
+			}
 			
 			System.out.println("radius " + radius);
 			try {
@@ -253,7 +262,7 @@ public class View extends JPanel {
 				Ellipse2D.Double circle = new Ellipse2D.Double(center.getX() - radius - 3, center.getY() - radius - 3, 2.0 * (radius + 3), 2.0 * (radius + 3));
 				g2D.fill(circle);
 			    g2D.draw(circle);
-				drawData(center, radius, stepNumber, g2D, categoric, percentages, labels);
+				drawData(center, radius, stepNumber, g2D, categoric, percentages, labels, next_radius);
 			
 				
 			} catch (IOException e) {
@@ -274,11 +283,6 @@ public class View extends JPanel {
 				
 			}
 			
-			if(i == dirs.length - 1){
-				radius -= 30 + max_radius/(dirs.length);
-			} else {
-				radius -= max_radius/(dirs.length);
-			}
 		}
 		level = dirs.length - 1;
 		
@@ -402,7 +406,7 @@ public class View extends JPanel {
 	
 
 	
-	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels) throws IOException {
+	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels, double prev_radius) throws IOException {
 
 
 		ArrayList<Segment> tmp = new ArrayList<Segment>();
@@ -417,7 +421,7 @@ public class View extends JPanel {
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			tmp.add(new Segment(labels[i], root, clr, categoric, percentages[i]));
 			double angle = -360 * last_percentage;
-			tmp.get(i).createPolygon(center, radius, step_number, angle, labels.length);
+			tmp.get(i).createPolygon(center, radius, step_number, angle, labels.length, prev_radius);
 			last_percentage += percentages[i];
 		}
 		
@@ -433,7 +437,9 @@ public class View extends JPanel {
 		
 		for (Segment s : segments.get(level)) {
 			g2D.setColor(new Color(255 - s.color.getRed(), 255 - s.color.getGreen(), 255 - s.color.getBlue()));
-			g2D.drawString(s.label + " " +  Math.round(s.percent*1000) / 10.0 + " %", (int) s.label_pos.getX(), (int) s.label_pos.getY());
+			String string = s.label + " " +  Math.round(s.percent*1000) / 10.0 + " %";
+			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 			g2D.setColor(s.color);
 		}
 	}
