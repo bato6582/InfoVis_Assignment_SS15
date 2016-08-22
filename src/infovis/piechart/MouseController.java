@@ -65,6 +65,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		view.change_time = false;
 		view.repaint();
 	}
 
@@ -73,10 +74,12 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		
 		double distance_x = e.getX() - clicked_x;
 		double distance_y = e.getY() - clicked_y;
-		int x_pos = (int) (view.timeline_rectangle.getX() + distance_x);
-		int y_pos = (int) (view.timeline_rectangle.getY() + distance_y);
-		if (x_pos > view.timeline_x_start && x_pos < view.timeline_x_end - view.pixel_per_year) {
-			view.timeline_rectangle.setRect(x_pos, view.timeline_y - view.pixel_per_year, view.pixel_per_year, view.pixel_per_year * 2);
+		if(view.change_time){
+			int x_pos = (int) (view.timeline_rectangle.getX() + distance_x);
+			int y_pos = (int) (view.timeline_rectangle.getY() + distance_y);
+			if (x_pos > view.timeline_x_start && x_pos < view.timeline_x_end - view.pixel_per_year) {
+				view.timeline_rectangle.setRect(x_pos, view.timeline_y - view.pixel_per_year, view.pixel_per_year, view.pixel_per_year * 2);
+			}			
 		}
 		
 		clicked_x = e.getX();

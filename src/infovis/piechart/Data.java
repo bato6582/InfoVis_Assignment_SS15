@@ -39,27 +39,23 @@ public class Data {
 		
 		readData();
 		
-		if (level < 3) {
+		if (level < 5) {
 			createChildren();
 		}
 	}
 	
 	private void createChildren() throws IOException {
 //		System.out.println("Create Children path " + path);
-		BufferedReader reader = new BufferedReader(new FileReader(path));
-		String line = null;
 		System.out.println("Name: " + name + " Parent_list: " + parent_list);
 		
 //		for (String month : months_ordered) {
 //			if (parent_list.contains(month)) {
 //			
 //		}
-		if (parent_list.contains(name)) {
-			System.out.println("List contains Name");
-			return;
-		} else if ((name.equals("male") || name.equals("female")) && parent_list.contains("sex")) {
+		if (addName()) {			
+			BufferedReader reader = new BufferedReader(new FileReader(path));
+			String line = null;
 
-		} else {			
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
 			new_parent_list.add(name);
 			
@@ -68,67 +64,84 @@ public class Data {
 				String[] words = line.split(";");
 				if (words[0].equals("year")) {
 					for (String word : words) {
-						Data data = null;
-						if (word.equals("year") || word.equals("number")) {
-							
-						} else if ((name.equals("sex")) && word.equals("male")) {
-							data = new Data(year, level, "male", path, new_parent_list);
-							
-						} else if ((name.equals("sex")) && word.equals("female")) {
-							data = new Data(year, level, "female", path, new_parent_list);
-							
-						} else if ((!name.equals("sex")) && word.equals("female") && !name.equals("female") && !name.equals("male")) {
-							data = new Data(year, level, "sex", path, new_parent_list);
+						ArrayList<Data> data = getChildrenData(word, new_parent_list);
 						
-						} else if ((!name.equals("sex")) && word.equals("male")) {
-							
-						} else if ((name.equals("month"))) {
-							data = new Data(year, level, "Januar", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Februar", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "März", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "April", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Mai", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Juni", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Juli", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "August", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "September", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Oktober", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "November", path, new_parent_list);
-							children.put(data.name, data);						
-							data = new Data(year, level, "Dezember", path, new_parent_list);
-							
-							
-						} else {
-							if (name != word && !parent_list.contains(word)) {							
-								data = new Data(year, level, word, path, new_parent_list);
-							}
+						for (Data entry : data) {
+							if (entry != null) {
+								children.put(entry.name, entry);						
+							}							
 						}
-						
-						if (data != null) {
-							children.put(data.name, data);						
-						}
-							
-						
 					}
 				} else {
 					reader.close();
-	//				System.out.println(name + "'s children: " + children);
+					//System.out.println(name + "'s children: " + children);
 					return;
 				}
 			}
 		}
 	}
 	
+
+	private ArrayList<Data> getChildrenData(String word, ArrayList<String> new_parent_list) throws IOException {
+		ArrayList<Data> data = new ArrayList<>();
+		if (word.equals("year") || word.equals("number")) {
+			
+		} else if (name.equals("sex")) {
+			if (word.equals("male")) {
+				System.out.println("ADD: " + word);
+				data.add(new Data(year, level, "male", path, new_parent_list));								
+			} else if (word.equals("female")) {
+				System.out.println("ADD: " + word);
+				data.add(new Data(year, level, "female", path, new_parent_list));
+			}
+		} else if ((!name.equals("sex")) && word.equals("female") && !name.equals("female") && !name.equals("male")) {
+			System.out.println("ADD: sex");
+			data.add(new Data(year, level, "sex", path, new_parent_list));
+		
+		} else if ((!name.equals("sex")) && word.equals("male") && !name.equals("male") && !name.equals("female") ) {
+			
+		} else if ((name.equals("male")) && word.equals("female") ) {
+			
+		} else if ((name.equals("female")) && word.equals("male") ) {
+
+		} else if ((name.equals("month"))) {
+			System.out.println("ADD: " + word);
+			data.add(new Data(year, level, "Januar", path, new_parent_list));				
+			data.add(new Data(year, level, "Februar", path, new_parent_list));			
+			data.add(new Data(year, level, "März", path, new_parent_list));			
+			data.add(new Data(year, level, "April", path, new_parent_list));			
+			data.add(new Data(year, level, "Mai", path, new_parent_list));	
+			data.add(new Data(year, level, "Juni", path, new_parent_list));		
+			data.add(new Data(year, level, "Juli", path, new_parent_list));		
+			data.add(new Data(year, level, "August", path, new_parent_list));		
+			data.add(new Data(year, level, "September", path, new_parent_list));			
+			data.add(new Data(year, level, "Oktober", path, new_parent_list));	
+			data.add(new Data(year, level, "November", path, new_parent_list));		
+			data.add(new Data(year, level, "Dezember", path, new_parent_list));		
+			
+			
+		} else {
+			if (!name.equals(word) && !parent_list.contains(word)) {							
+				System.out.println("General ADD: " + word + " to " + name);
+				data.add(new Data(year, level, word, path, new_parent_list));
+			}
+		}
+		return data;
+	}
+
+	private boolean addName() {
+		boolean add = false;
+		if (parent_list.contains(name)) {
+			System.out.println("List contains Name");
+		} else if (name.equals("male") && parent_list.contains("female")) {
+			System.out.println("List contains Female");
+		} else if (name.equals("female") && parent_list.contains("male")) {
+			System.out.println("List contains Male");
+		} else {
+			add = true;
+		}
+		return add;
+	}
 
 	private void readData() throws IOException {
 		
