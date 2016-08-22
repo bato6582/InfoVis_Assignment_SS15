@@ -28,10 +28,16 @@ public class Fisheye implements Layout{
 		
 //		System.out.println("HAAAALLLLLOOOO");
 		for (Vertex vertex: model.getVertices()){
-			vertex.setX(fishTranslate(vertex.getCenterX() , x / view.getScale(), view.getWidth(), view.getScale()) - vertex.getWidth() * 0.5 * view.getScale());
-			vertex.setY(fishTranslate(vertex.getCenterY() , y / view.getScale(), view.getHeight(), view.getScale()) - vertex.getHeight() * 0.5 * view.getScale());
-			vertex.setWidth(fishScale(vertex.getX() , vertex.getCenterX(), x/ view.getScale() , view.getWidth(), view.getScale()));
-			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), y/ view.getScale() , view.getHeight(), view.getScale()));
+//			int tmp_x = (int) (x - vertex.getWidth() * 0.5 * view.getScale());
+//			int tmp_y = (int) (y - vertex.getHeight() * 0.5 * view.getScale());
+			
+			int tmp_x = x;
+			int tmp_y = y;
+			
+			vertex.setX(fishTranslate(vertex.getCenterX() , tmp_x / view.getScale(), view.getWidth(), view.getScale()) /*- vertex.getWidth() * 0.5 * view.getScale()*/);
+			vertex.setY(fishTranslate(vertex.getCenterY() , tmp_y / view.getScale(), view.getHeight(), view.getScale()) /*- vertex.getHeight() * 0.5 * view.getScale()*/);
+			vertex.setWidth(fishScale(vertex.getX() , vertex.getCenterX(), tmp_x/ view.getScale() , view.getWidth(), view.getScale()));
+			vertex.setHeight(fishScale(vertex.getY(), vertex.getCenterY(), tmp_y/ view.getScale() , view.getHeight(), view.getScale()));
 		}
 		return model;
 	}
