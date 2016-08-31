@@ -352,7 +352,6 @@ public class View extends JPanel {
 				
 				for (int i = 0; i < percentages.length; i++) {
 					percentages[i] /= sum;
-					
 				}
 				
 				//printArray(percentages);
@@ -474,20 +473,21 @@ public class View extends JPanel {
 		Color clr = new Color(255, 128, 0);
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 		
-		double last_percentage = 0;
+		double pos = 0;
 		for (int i = 0; i < percentages.length; i++) {
-			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
-			segment_per_lvl.add(new Segment(labels[i], root, clr, categoric, percentages[i]));
-			
 			double angle = -360 * percentages[i];
-			double pos_angle = -360 * last_percentage;
 			
+			//System.out.println("Angle: " + angle);
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
-			start_pos = Segment.rotatePoint(start_pos, center, pos_angle);
+			start_pos = Segment.rotatePoint(start_pos, center, pos);
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
-			segment_per_lvl.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			
-			last_percentage += percentages[i];
+			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
+			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			segment_per_lvl.add(segment);
+			pos += angle;
 		}
 		
 		segments.put(level, segment_per_lvl);
@@ -495,18 +495,16 @@ public class View extends JPanel {
 		String[] dirs = current_tree_path.split("/");
 		
 		for (Segment s : segments.get(level)) {
-			if (level < dirs.length - 1) {
-				// ************* Change Color for marking the chosen path **************
-				if (s.label.equals(dirs[level + 1])){
+			// ************* Change Color for marking the chosen path **************
+			if (s.label.equals(dirs[level + 1])){
 //					s.color = (new Color( (int) (s.color.getRed() * 0.5), (int) (s.color.getGreen() * 0.5), (int) (s.color.getBlue() * 0.5)));
 //					s.color = Color.GREEN;
-					s.color = new Color (0,0,102);
-					
-				} else {
-					s.color = new Color(s.color.getRed(), s.color.getRed(), s.color.getRed() , (int) (s.color.getAlpha() * 0.5));
-				}
-//				System.out.println("Label: " + s.label + "  Path: " + dirs[level]);			
+				s.color = new Color (0,0,102);
+				
+			} else {
+				s.color = new Color(s.color.getRed(), s.color.getRed(), s.color.getRed() , (int) (s.color.getAlpha() * 0.5));
 			}
+//				System.out.println("Label: " + s.label + "  Path: " + dirs[level]);
 			g2D.setColor(s.color);
 			g2D.fill(s.poly);
 			g2D.drawPolygon(s.poly);
@@ -524,7 +522,6 @@ public class View extends JPanel {
 			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
 			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
-			
 			
 			
 //			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
@@ -550,6 +547,9 @@ public class View extends JPanel {
 		double unselected_perc = 0;
 		ArrayList<Integer> unselected_index_list = new ArrayList<>();
 		
+		double part_unselected = 60.0;
+		
+		// sum of selected/unselected percentages
 		for (int i = 0; i < percentages.length; i++) {
 			if (selected_segments.contains(labels[i])) {
 				selected_index_list.add(i);
@@ -559,12 +559,16 @@ public class View extends JPanel {
 				unselected_perc += percentages[i];
 			}
 		}
+		if (unselected_perc < part_unselected / 360) {
+			part_unselected = unselected_perc * 360;
+		}
 		
+		// calc polygons for selected values
 		double pos = 0;
 		for (int i : selected_index_list) {
 			double angle = -360 * percentages[i] / selected_perc;
-			if (unselected_index_list.size() != 0) {				
-				angle = 360 * -(300.0/360.0) * percentages[i] / selected_perc;
+			if (unselected_index_list.size() != 0) {		
+				angle = -(360 - part_unselected) * percentages[i] / selected_perc;
 			}
 
 			//System.out.println("Angle: " + angle);
@@ -573,19 +577,19 @@ public class View extends JPanel {
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			
-			Segment segment = new Segment(labels[i], root, clr, categoric, -angle/(300.0/360.0));
+			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
 			segment_per_lvl.add(segment);
 			pos += angle;
-			
 		}
 		
 	
+		// calc polygons for unselected values
 		for (int i : unselected_index_list) {
 			double angle = -360 * percentages[i];
 			if (selected_index_list.size() != 0) {
-				angle = 360 * -(60.0/360.0) * percentages[i] / unselected_perc;				
+				angle = -part_unselected * percentages[i] / unselected_perc;
 			}
 			//System.out.println(angle);
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
@@ -602,16 +606,16 @@ public class View extends JPanel {
 		
 	
 		segments.put(level, segment_per_lvl);
-		System.out.println(level);
 		
+		// draw polygon
 		for (Segment s : segment_per_lvl) {
 			g2D.setColor(s.color);
 			g2D.fill(s.poly);
 			g2D.drawPolygon(s.poly);
 		}
 		
-		
-		for (Segment s : segments.get(level)) {
+		// draw label
+		for (Segment s : segment_per_lvl) {
 			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
 			double fac = 1 / 255.0;
 			double r = s.color.getRed() * fac;
@@ -622,8 +626,6 @@ public class View extends JPanel {
 			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
 			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
-			
-			
 			
 //			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 			String string = s.label;
