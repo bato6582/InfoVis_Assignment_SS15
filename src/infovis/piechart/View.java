@@ -445,8 +445,7 @@ public class View extends JPanel {
 		for (Segment seg : segments.get(lvl)) {
 			if (seg.label.equals(label)) {
 				return seg;				
-			}
-			
+			}	
 		}
 		
 		System.out.println("Failed to find segment");
