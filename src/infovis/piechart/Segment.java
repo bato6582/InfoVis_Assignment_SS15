@@ -87,7 +87,6 @@ public class Segment {
 		
 		xs[array_size - 1] = (int) end_pos.getX();
 		ys[array_size - 1] = (int) end_pos.getY();
-		
 		poly = new Polygon(xs, ys, array_size);
 	}
 	

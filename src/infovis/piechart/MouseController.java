@@ -75,7 +75,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		
 
 		//Iterator<Data> iter = model.iterator();
-		view.getMarkerRectangle().setRect(e.getX(), e.getY(), 0, 0);
+		//view.getMarkerRectangle().setRect(e.getX(), e.getY(), 0, 0);
 		view.repaint();
 //		System.out.println("pressed KeyCode: ");
 	}

@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -18,26 +19,14 @@ import javax.swing.JPanel;
 
 public class View extends JPanel {
 
-
 	public Rectangle2D timeline_rectangle = new Rectangle2D.Double(0, 0, 0, 0);
-	private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
-
-	public Rectangle2D.Double selectedRectangle;
+	//private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
 
 	private int width;
 	private int height;	
 	
-	public boolean change_time = false;
-	
 	public int year = 2015;
-
-	public String[] labels;
-	
-
-	public double xOffset = 0.0;
-	public double oldXOffset = 0.0;
-	public String draggedLabel = "";
-	public boolean dragLabel = false;
+	public boolean change_time = false;
 
 	public int timeline_x_start = 50;
 	public int timeline_x_end= 0;
@@ -47,22 +36,19 @@ public class View extends JPanel {
 	public int max_level = 5;
 	public int level = 0;
 	
-	//<level, segments>
+	private static HashMap<Integer, HashMap<String, Data>> data_map = new HashMap<>();
 	public HashMap< Integer, ArrayList<Segment>> segments = new HashMap<Integer, ArrayList<Segment>>();
+	public ArrayList<String> selected_segments = new ArrayList<>();
+	public String[] labels;
+	public double[] percentages;
 	
 	private static String path_birth = "data/Geburten_Monat_Sex_1950-2015.csv";
-//	private static String path_death = "data/Tode_Monat_Sex_1950-2015.csv";
-	private static HashMap<Integer, HashMap<String, Data>> data_map = new HashMap<>();
 	
-	private static Data root = null;
 
+	private static Data root = null;
 	private static String current_tree_path = "root/";
 	
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
-	
-	
-	public ArrayList<String> selected_segments = new ArrayList<>();
-	
 	
 	public void initialize() throws IOException {
 		width = getWidth();
@@ -212,15 +198,12 @@ public class View extends JPanel {
 			}
 			level = i;
 			//System.out.println("level " + level);
-			double[] percentages = getPercentages(data_map.get(year), new_tree_path); //changes colors
+			setPercentages(data_map.get(year), new_tree_path); //changes colors
 			
 //			printArray(labels);
 //			printArray(percentages);
 		
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
-			double stepNumber = 360;
-			int fac = dirs.length - 1 - i;
-
 			
 			radius = next_radius;
 			if(i == dirs.length - 1){
@@ -231,12 +214,15 @@ public class View extends JPanel {
 			
 			//System.out.println("radius " + radius);
 			try {
-				boolean categoric = (level % 2) == 0 ? false : true;
 				g2D.setColor(Color.BLACK);
 				Ellipse2D.Double circle = new Ellipse2D.Double(center.getX() - radius - 3, center.getY() - radius - 3, 2.0 * (radius + 3), 2.0 * (radius + 3));
 				g2D.fill(circle);
 			    g2D.draw(circle);
-				drawData(center, radius, stepNumber, g2D, categoric, percentages, labels, next_radius);
+			    if (i == dirs.length - 1) {
+			    	drawOuterData(center, radius, g2D, next_radius);
+			    } else {
+			    	drawInnerData(center, radius, g2D, next_radius);			    	
+			    }
 			
 				
 			} catch (IOException e) {
@@ -284,7 +270,7 @@ public class View extends JPanel {
 	
 
 	
-	private double[] getPercentages(HashMap<String, Data> map, String new_current_tree_path){
+	private void setPercentages(HashMap<String, Data> map, String new_current_tree_path){
 		//System.out.println("New Path: " + new_current_tree_path);
 		if (level % 2 == 1) {
 			String[] keys = new_current_tree_path.split("/");
@@ -302,10 +288,10 @@ public class View extends JPanel {
 			root = data;
 			
 			Set<String> key_set = data.getChildrenMap().keySet();
-			double[] percent = new double[key_set.size()];
+			percentages = new double[key_set.size()];
 			
 			for (int i = 0; i < key_set.size(); i++) {
-				percent[i] = 1.0 / key_set.size();
+				percentages[i] = 1.0 / key_set.size();
 			}
 			
 
@@ -314,8 +300,6 @@ public class View extends JPanel {
 			} else {
 				labels = root.getChildrenMap().keySet().toArray(new String[root.getChildrenMap().keySet().size()]);
 			}
-			
-			return percent;
 			
 		} else {
 		
@@ -332,7 +316,7 @@ public class View extends JPanel {
 				
 				labels = new String[] {"birth", "death"};
 				
-				return new double[] {births, deaths};
+				percentages = new double[] {births, deaths};
 				
 			} else {
 				// get current Data
@@ -356,26 +340,25 @@ public class View extends JPanel {
 				double sum = 0.0;
 				Set<String> key_set = data.getValues().keySet();
 				//System.out.println(key_set);
-				double[] numbers = new double[key_set.size()];
+				percentages = new double[key_set.size()];
 				
 				int iterator = 0;
 				for (String key : key_set) {
 					double number = data.getValues().get(key);
-					numbers[iterator] = number;
+					percentages[iterator] = number;
 					sum += number;
 					iterator++;
 				}
 				
-				for (int i = 0; i < numbers.length; i++) {
-					numbers[i] /= sum;
+				for (int i = 0; i < percentages.length; i++) {
+					percentages[i] /= sum;
 					
 				}
 				
-				printArray(numbers);
+				//printArray(percentages);
 				
 				labels = key_set.toArray(new String[key_set.size()]);
 				
-				return numbers;
 			}
 		}
 	}
@@ -389,13 +372,12 @@ public class View extends JPanel {
 	}
 	
 
-	
+	/*
 	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels, double prev_radius) throws IOException {
-		ArrayList<Segment> tmp = new ArrayList<Segment>();
-		Color clr = new Color(255, 128, 0);
+		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
 		
+		Color clr = new Color(255, 128, 0);
 		int color_gradient = (3 * 255) / (percentages.length + 1);
-//		System.out.println("Color: " + color_gradient);
 		
 		double selected_perc = 0;
 		double unselected_perc = 0;
@@ -408,6 +390,7 @@ public class View extends JPanel {
 				}
 			}
 		}
+		
 		System.out.println("selected: " + selected_perc + " unselected: " + unselected_perc);
 		double last_percentage = 0;
 		for (int i = 0; i < percentages.length; i++) {
@@ -421,7 +404,7 @@ public class View extends JPanel {
 				perc = last_percentage * 0.1 / unselected_perc;
 			}
 			
-			tmp.add(new Segment(labels[i], root, clr, categoric, perc));
+			segment_per_lvl.add(new Segment(labels[i], root, clr, categoric, perc));
 			
 			double angle = -360 * perc;
 			double pos_angle = -360 * last_percentage;
@@ -429,13 +412,13 @@ public class View extends JPanel {
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
 			start_pos = Segment.rotatePoint(start_pos, center, pos_angle);
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, (percentages[i] * -360));
-			tmp.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			segment_per_lvl.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
 			last_percentage += perc;
 		}
 		
 	
-		segments.put(level, tmp);
+		segments.put(level, segment_per_lvl);
 
 		String[] dirs = current_tree_path.split("/");
 		
@@ -475,12 +458,184 @@ public class View extends JPanel {
 //			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 			String string = s.label;
 			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*//*));
+			string = Math.round(s.percent*1000) / 10.0 + " %";
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+			g2D.setColor(s.color);
+		}
+	}
+	*/
+	
+	
+	public void drawInnerData(Point2D.Double center, double radius, Graphics2D g2D, double prev_radius) throws IOException {
+		boolean categoric = (level % 2) == 0 ? false : true;
+		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
+		
+		Color clr = new Color(255, 128, 0);
+		int color_gradient = (3 * 255) / (percentages.length + 1);
+		
+		double last_percentage = 0;
+		for (int i = 0; i < percentages.length; i++) {
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			segment_per_lvl.add(new Segment(labels[i], root, clr, categoric, percentages[i]));
+			
+			double angle = -360 * percentages[i];
+			double pos_angle = -360 * last_percentage;
+			
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos_angle);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
+			segment_per_lvl.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			last_percentage += percentages[i];
+		}
+		
+		segments.put(level, segment_per_lvl);
+
+		String[] dirs = current_tree_path.split("/");
+		
+		for (Segment s : segments.get(level)) {
+			if (level < dirs.length - 1) {
+				// ************* Change Color for marking the chosen path **************
+				if (s.label.equals(dirs[level + 1])){
+//					s.color = (new Color( (int) (s.color.getRed() * 0.5), (int) (s.color.getGreen() * 0.5), (int) (s.color.getBlue() * 0.5)));
+//					s.color = Color.GREEN;
+					s.color = new Color (0,0,102);
+					
+				} else {
+					s.color = new Color(s.color.getRed(), s.color.getRed(), s.color.getRed() , (int) (s.color.getAlpha() * 0.5));
+				}
+//				System.out.println("Label: " + s.label + "  Path: " + dirs[level]);			
+			}
+			g2D.setColor(s.color);
+			g2D.fill(s.poly);
+			g2D.drawPolygon(s.poly);
+		}
+		
+		
+		for (Segment s : segments.get(level)) {
+			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
+			double fac = 1 / 255.0;
+			double r = s.color.getRed() * fac;
+			double g = s.color.getGreen() * fac;
+			double b = s.color.getBlue() * fac;
+			r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
+			g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
+			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
+			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
+			
+			
+			
+//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
+			String string = s.label;
+			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 			string = Math.round(s.percent*1000) / 10.0 + " %";
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
 			g2D.setColor(s.color);
 		}
 	}
+	
+	
+	public void drawOuterData(Point2D.Double center, double radius, Graphics2D g2D, double prev_radius) throws IOException {
+		boolean categoric = (level % 2) == 0 ? false : true;
+		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
+		
+		Color clr = new Color(255, 128, 0);
+		int color_gradient = (3 * 255) / (percentages.length + 1);
+
+		double selected_perc = 0;
+		ArrayList<Integer> selected_index_list = new ArrayList<>();
+		double unselected_perc = 0;
+		ArrayList<Integer> unselected_index_list = new ArrayList<>();
+		
+		for (int i = 0; i < percentages.length; i++) {
+			if (selected_segments.contains(labels[i])) {
+				selected_index_list.add(i);
+				selected_perc += percentages[i];
+			} else {
+				unselected_index_list.add(i);
+				unselected_perc += percentages[i];
+			}
+		}
+		
+		double pos = 0;
+		for (int i : selected_index_list) {
+			double angle = -360 * percentages[i] / selected_perc;
+			if (unselected_index_list.size() != 0) {				
+				angle = 360 * -(300.0/360.0) * percentages[i] / selected_perc;
+			}
+
+			//System.out.println("Angle: " + angle);
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			
+			Segment segment = new Segment(labels[i], root, clr, categoric, -angle/(300.0/360.0));
+			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			segment_per_lvl.add(segment);
+			pos += angle;
+			
+		}
+		
+	
+		for (int i : unselected_index_list) {
+			double angle = -360 * percentages[i];
+			if (selected_index_list.size() != 0) {
+				angle = 360 * -(60.0/360.0) * percentages[i] / unselected_perc;				
+			}
+			//System.out.println(angle);
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			
+			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
+			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			segment_per_lvl	.add(segment);
+			pos += angle;
+		}
+		
+	
+		segments.put(level, segment_per_lvl);
+		System.out.println(level);
+		
+		for (Segment s : segment_per_lvl) {
+			g2D.setColor(s.color);
+			g2D.fill(s.poly);
+			g2D.drawPolygon(s.poly);
+		}
+		
+		
+		for (Segment s : segments.get(level)) {
+			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
+			double fac = 1 / 255.0;
+			double r = s.color.getRed() * fac;
+			double g = s.color.getGreen() * fac;
+			double b = s.color.getBlue() * fac;
+			r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
+			g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
+			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
+			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
+			
+			
+			
+//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
+			String string = s.label;
+			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
+			string = Math.round(s.percent*1000) / 10.0 + " %";
+			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+			g2D.setColor(s.color);
+		}
+	}
+	
+	
 	
 	private int min(int i, int j) {
 		return (i < j) ? i : j;
@@ -528,9 +683,9 @@ public class View extends JPanel {
 	}
 
 
-	public Rectangle2D getMarkerRectangle() {
-		return markerRectangle;
-	}
+	//public Rectangle2D getMarkerRectangle() {
+	//	return markerRectangle;
+	//}
 	
 
 
