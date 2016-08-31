@@ -61,6 +61,8 @@ public class View extends JPanel {
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
 	
+	public ArrayList<String> selected_segments = new ArrayList<>();
+	
 	
 	public void initialize() throws IOException {
 		width = getWidth();
@@ -199,6 +201,7 @@ public class View extends JPanel {
 		double max_radius = radius;
 		double next_radius = radius;
 
+		
 		// ********** SEGMENTS ********** //
 		System.out.println("Path: \"" + current_tree_path + "\"; Level: " + level);
 		for (int i = dirs.length - 1; i >= 0; i--) {
@@ -240,7 +243,7 @@ public class View extends JPanel {
 				e.printStackTrace();
 			}
 
-			//Table lover edge per level and Strings
+			//Table lower edge per level and Strings
 			g2D.setColor(Color.BLACK);
 			g2D.drawLine(width - 40, 40 + 15 * (i + 1), x_left_column, 40 + 15 * (i + 1));
 			if (i == 0) {
@@ -248,10 +251,20 @@ public class View extends JPanel {
 				g2D.drawString("Wert", x_right_column + 10, 38 + 15 * (i + 1));
 				
 			} else {
+				Segment seg = getSegmentOnLevel(i - 1, dirs[i]);
 				g2D.drawString(dirs[i], x_left_column + 10, 38 + 15 * (i + 1));
 				if (((i-1) % 2) == 0) { // not categoric
-					g2D.drawString("" + (Math.round(getSegmentOnLevel(i - 1, dirs[i]).percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));	
+//					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", (int) seg.label_pos.getX(), (int) seg.label_pos.getY());	
+					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));	
 				}				
+//				Color c = seg.color;
+//				int r = (int) (c.getRed() * 0.5);
+//				int gr = (int) (c.getGreen() * 0.5);
+//				int b = (int) (c.getBlue() * 0.5);
+//				c = new Color (r, gr, b);
+//				g2D.setColor(c);
+//				g2D.fill(seg.poly);
+//				g2D.drawPolygon(seg.poly);
 				
 			}
 			
@@ -378,34 +391,88 @@ public class View extends JPanel {
 
 	
 	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels, double prev_radius) throws IOException {
-
-
 		ArrayList<Segment> tmp = new ArrayList<Segment>();
 		Color clr = new Color(255, 128, 0);
 		
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 //		System.out.println("Color: " + color_gradient);
 		
+		double selected_perc = 0;
+		double unselected_perc = 0;
+		for (int i = 0; i < percentages.length; i++) {
+			if (i == current_tree_path.split("/").length - 1) {
+				if (selected_segments.contains(labels[i])) {
+					selected_perc += percentages[i];
+				} else {
+					unselected_perc += percentages[i];				
+				}
+			}
+		}
+		System.out.println("selected: " + selected_perc + " unselected: " + unselected_perc);
 		double last_percentage = 0;
 		for (int i = 0; i < percentages.length; i++) {
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
-			tmp.add(new Segment(labels[i], root, clr, categoric, percentages[i]));
-			double angle = -360 * last_percentage;
-			tmp.get(i).createPolygon(center, radius, step_number, angle, labels.length, prev_radius);
-			last_percentage += percentages[i];
+			double perc;
+			if (selected_segments.size() == 0 || i != (current_tree_path.split("/").length - 1) ) {
+				perc = percentages[i];				
+			} else if (selected_segments.contains(labels[i])) {
+				perc = last_percentage * 0.9 / selected_perc;				
+			} else {
+				perc = last_percentage * 0.1 / unselected_perc;
+			}
+			
+			tmp.add(new Segment(labels[i], root, clr, categoric, perc));
+			
+			double angle = -360 * perc;
+			double pos_angle = -360 * last_percentage;
+			
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos_angle);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, (percentages[i] * -360));
+			tmp.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			last_percentage += perc;
 		}
 		
 	
 		segments.put(level, tmp);
 
+		String[] dirs = current_tree_path.split("/");
+		
 		for (Segment s : segments.get(level)) {
+			if(level < dirs.length - 1){
+				// ************* Change Color for marking the chosen path **************
+				if (s.label.equals(dirs[level + 1])){
+//					s.color = (new Color( (int) (s.color.getRed() * 0.5), (int) (s.color.getGreen() * 0.5), (int) (s.color.getBlue() * 0.5)));
+//					s.color = Color.GREEN;
+					s.color = new Color (0,0,102);
+					
+				}else{
+					s.color = new Color(s.color.getRed(), s.color.getRed(), s.color.getRed() , (int) (s.color.getAlpha() * 0.5));
+				}
+//				System.out.println("Label: " + s.label + "  Path: " + dirs[level]);			
+			}
 			g2D.setColor(s.color);
 			g2D.fill(s.poly);
 			g2D.drawPolygon(s.poly);
 		}
 		
+		
 		for (Segment s : segments.get(level)) {
-			g2D.setColor(new Color(255 - s.color.getRed(), 255 - s.color.getGreen(), 255 - s.color.getBlue()));
+			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
+			double fac = 1 / 255.0;
+			double r = s.color.getRed() * fac;
+			double g = s.color.getGreen() * fac;
+			double b = s.color.getBlue() * fac;
+			r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
+			g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
+			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
+			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
+			
+			
+			
+//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 			String string = s.label;
 			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
@@ -464,6 +531,8 @@ public class View extends JPanel {
 	public Rectangle2D getMarkerRectangle() {
 		return markerRectangle;
 	}
+	
+
 
 
 

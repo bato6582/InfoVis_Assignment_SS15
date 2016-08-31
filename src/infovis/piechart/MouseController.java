@@ -3,6 +3,7 @@ package infovis.piechart;
 import infovis.scatterplot.Model;
 
 import java.awt.Shape;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -15,24 +16,38 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	
 	private View view = null;
 	private Model model = null;
+	private boolean ctr_pressed = false;
 	Shape currentShape = null;
 	private double clicked_x = 0.0;
 	private double clicked_y = 0.0;
 	
+	private KeyboardController key_controller = null;
+	
+	public void set_key_controller (KeyboardController k) {
+		key_controller = k;
+	}
+	
 	public void mouseClicked(MouseEvent e) {
-		boolean break_loop = false;
-		
 		for (int i = 0; i <= view.level; i++) {
-			if(break_loop) {
-				break;
-			}
+	
 			
 			if (view.segments.containsKey(i)) {
 				for (Segment s : view.segments.get(i)) {
 					if (s.poly.contains(e.getX(), e.getY())) {
-						view.clicked(s.label, i);
-						break_loop = true;
-						break;
+						
+						if (key_controller.getCtrl_pressed()) {
+							 if (i == view.level) {
+								 System.out.println("SegmentClicked");
+								 if (view.selected_segments.contains(s.label)) {
+									 view.selected_segments.remove(s.label);
+								 }
+								 view.selected_segments.add(s.label);
+							 }
+						} else {
+							view.clicked(s.label, i);
+							view.selected_segments.clear();
+						}
+						return;
 					}
 				}
 				
@@ -62,6 +77,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		//Iterator<Data> iter = model.iterator();
 		view.getMarkerRectangle().setRect(e.getX(), e.getY(), 0, 0);
 		view.repaint();
+//		System.out.println("pressed KeyCode: ");
 	}
 
 	public void mouseReleased(MouseEvent e) {
@@ -121,5 +137,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	public void setModel(Model model) {
 		this.model = model;
 	}
+
+
 
 }
