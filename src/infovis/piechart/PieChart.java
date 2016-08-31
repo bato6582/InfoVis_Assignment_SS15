@@ -8,7 +8,8 @@ import infovis.scatterplot.Model;
 import javax.swing.SwingUtilities;
 
 public class PieChart {
-	private MouseController controller = null;
+	private MouseController mouse_controller = null;
+	private KeyboardController key_controller = null;
     private Model model = null;
     private static View view = null;
        
@@ -19,12 +20,17 @@ public class PieChart {
 	public void generateDiagram(){
 	   model = new Model();
 	   view = new View();
-	   controller = new MouseController();
-	   view.addMouseListener(controller);
-	   view.addMouseMotionListener(controller);
+	   mouse_controller = new MouseController();
+	   key_controller = new KeyboardController();
+	   view.addMouseListener(mouse_controller);
+	   view.addMouseMotionListener(mouse_controller);
+	   view.addKeyListener(key_controller);
+	   view.setFocusable(true);
 	   
-	   controller.setModel(model);
-	   controller.setView(view);
+	   
+	   mouse_controller.setModel(model);
+	   mouse_controller.setView(view);
+	   mouse_controller.set_key_controller(key_controller);
 	}
 	
 	public static void main(String[] args) {

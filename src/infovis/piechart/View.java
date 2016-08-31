@@ -61,6 +61,8 @@ public class View extends JPanel {
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
 	
+	public ArrayList<String> selected_segments = new ArrayList<>();
+	
 	
 	public void initialize() throws IOException {
 		width = getWidth();
@@ -199,6 +201,7 @@ public class View extends JPanel {
 		double max_radius = radius;
 		double next_radius = radius;
 
+		
 		// ********** SEGMENTS ********** //
 		System.out.println("Path: \"" + current_tree_path + "\"; Level: " + level);
 		for (int i = dirs.length - 1; i >= 0; i--) {
@@ -388,21 +391,47 @@ public class View extends JPanel {
 
 	
 	public void drawData(Point2D.Double center, double radius, double step_number, Graphics2D g2D, boolean categoric, double[] percentages, String[] labels, double prev_radius) throws IOException {
-
-
 		ArrayList<Segment> tmp = new ArrayList<Segment>();
 		Color clr = new Color(255, 128, 0);
 		
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 //		System.out.println("Color: " + color_gradient);
 		
+		double selected_perc = 0;
+		double unselected_perc = 0;
+		for (int i = 0; i < percentages.length; i++) {
+			if (i == current_tree_path.split("/").length - 1) {
+				if (selected_segments.contains(labels[i])) {
+					selected_perc += percentages[i];
+				} else {
+					unselected_perc += percentages[i];				
+				}
+			}
+		}
+		System.out.println("selected: " + selected_perc + " unselected: " + unselected_perc);
 		double last_percentage = 0;
 		for (int i = 0; i < percentages.length; i++) {
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
-			tmp.add(new Segment(labels[i], root, clr, categoric, percentages[i]));
-			double angle = -360 * last_percentage;
-			tmp.get(i).createPolygon(center, radius, step_number, angle, labels.length, prev_radius);
-			last_percentage += percentages[i];
+			double perc;
+			if (selected_segments.size() == 0 || i != (current_tree_path.split("/").length - 1) ) {
+				perc = percentages[i];				
+			} else if (selected_segments.contains(labels[i])) {
+				perc = last_percentage * 0.9 / selected_perc;				
+			} else {
+				perc = last_percentage * 0.1 / unselected_perc;
+			}
+			
+			tmp.add(new Segment(labels[i], root, clr, categoric, perc));
+			
+			double angle = -360 * perc;
+			double pos_angle = -360 * last_percentage;
+			
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos_angle);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, (percentages[i] * -360));
+			tmp.get(i).createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
+			
+			last_percentage += perc;
 		}
 		
 	
@@ -503,6 +532,8 @@ public class View extends JPanel {
 	public Rectangle2D getMarkerRectangle() {
 		return markerRectangle;
 	}
+	
+
 
 
 
