@@ -18,8 +18,6 @@ public class Data implements Serializable {
 	ArrayList<String> parent_list = new ArrayList<>();
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
-	private ArrayList<String> all_mother_ages = new ArrayList<>();
-	
 	public HashMap<String, Data> children = new LinkedHashMap<>();
 	private HashMap<String, Integer> values = new LinkedHashMap<>();
 
@@ -116,6 +114,7 @@ public class Data implements Serializable {
 			
 			
 		} else if (!name.equals("birth") && word.equals("age mother")) {
+		} else if (!name.equals("death") && word.equals("age")) {
 			
 		} else {
 			if (!name.equals(word) && !parent_list.contains(word)) {
@@ -126,21 +125,18 @@ public class Data implements Serializable {
 	}
 
 	private boolean addName() {
-		boolean add = false;
-		if (parent_list.contains("age mother")) {
-			System.out.println(parent_list);
-		}
-			
+		boolean add = false;			
 		if (parent_list.contains(name)) {
 		} else if (name.equals("male") && parent_list.contains("female")) {
 		} else if (name.equals("female") && parent_list.contains("male")) {
 		} else if (parent_list.size() > 1 && parent_list.get(parent_list.size() - 2) == "name") {
 		} else if (parent_list.contains("age mother")) {
 		} else if (name.equals("age mother")) {
+		} else if (parent_list.contains("age")) {
+		} else if (name.equals("age")) {
 		} else {
 			add = true;
 		}
-		//System.out.println(add);
 		return add;
 	}
 
@@ -156,6 +152,8 @@ public class Data implements Serializable {
 			readSex();
 		} else if (name.equals("age mother")) {
 			readAgeMother();
+		} else if (name.equals("age")) {
+			//readAge();
 		} else {
 			//...
 		}
@@ -265,17 +263,18 @@ public class Data implements Serializable {
 	
 	
 	private void readAgeMother() throws NumberFormatException, IOException {
-		BufferedReader birth_age_reader = new BufferedReader(new FileReader("data/birth_age.csv"));
+		BufferedReader reader = new BufferedReader(new FileReader("data/birth_age.csv"));
 		String line = null;
 		
 		String age = "";
 		
-		while ((line = birth_age_reader.readLine()) != null) {
+		while ((line = reader.readLine()) != null) {
 			String[] words = line.split(";");
 			if (!words[0].equals("year")) { // not first row
 				if (words[0].equals(year + "")) { // right year
 					age = words[1];
 					int number = Integer.parseInt(words[2]);
+<<<<<<< HEAD
 //					System.out.println("NUMBER MOTHER				" + number);
 					if (number != 0) {
 						values.put(age, number);
@@ -283,20 +282,42 @@ public class Data implements Serializable {
 							all_mother_ages.add(age);
 						}
 					}
+=======
+					values.put(age, number);
+>>>>>>> cad14db7ba374e9f1a79d4e947fbaec4fc589ef7
 				}
 			}
 		}
 		if (age.equals("")) { // no content for year
 			values.put("No values available for this year", 1);
 		}
-		birth_age_reader.close();
+		reader.close();
+	}
+	
+	private void readAge() throws NumberFormatException, IOException {
+		BufferedReader reader = new BufferedReader(new FileReader("data/death_age.csv"));
+		String line = null;
+		
+		String age = "";
+		
+		while ((line = reader.readLine()) != null) {
+			String[] words = line.split(";");
+			if (!words[0].equals("year")) { // not first row
+				if (words[0].equals(year + "")) { // right year
+					age = words[1];
+					int number = Integer.parseInt(words[2]);
+					values.put(age, number);
+				}
+			}
+		}
+		if (age.equals("")) { // no content for year
+			values.put("No values available for this year", 1);
+		}
+		reader.close();
 	}
 	
 
 	private String getValueOfCell(String[] header, String[] words, String name) {
-//		System.out.println("header " + header);
-//		System.out.println("words " + words);
-//		System.out.println("name " + name);
 		for (int i = 0; i < header.length; i++) {
 			if (header[i].equals(name)) {
 				return words[i];
