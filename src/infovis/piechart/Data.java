@@ -274,9 +274,12 @@ public class Data {
 				if (words[0].equals(year + "")) { // right year
 					age = words[1];
 					int number = Integer.parseInt(words[2]);
-					values.put(age, number);
-					if (!all_mother_ages.contains(age)) {
-						all_mother_ages.add(age);
+//					System.out.println("NUMBER MOTHER				" + number);
+					if (number != 0) {
+						values.put(age, number);
+						if (!all_mother_ages.contains(age)) {
+							all_mother_ages.add(age);
+						}
 					}
 				}
 			}

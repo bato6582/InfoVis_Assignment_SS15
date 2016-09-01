@@ -490,8 +490,9 @@ public class View extends JPanel {
 		
 		// calc polygons for selected values
 		double pos = 0;
+		double a = 0;
 		for (int i : selected_index_list) {
-			double angle = -360 * percentages[i] / selected_perc;
+			double angle = -360 * percentages[i] / (double) selected_perc;
 			if (unselected_index_list.size() != 0) {		
 				angle = -(360 - part_unselected) * percentages[i] / selected_perc;
 			}
@@ -508,6 +509,7 @@ public class View extends JPanel {
 			
 			segment_per_lvl.add(segment);
 			pos += angle;
+			a = angle;
 		}
 		
 	
@@ -515,9 +517,9 @@ public class View extends JPanel {
 		for (int i : unselected_index_list) {
 			double angle = -360 * percentages[i];
 			if (shift_pressed && ctrl_pressed) {
-				angle = -360 / labels.length;
+				angle = -360 / (double) labels.length;
 			} else if (selected_index_list.size() != 0) {
-				angle = -part_unselected * percentages[i] / unselected_perc;
+				angle = -part_unselected * percentages[i] / (double) unselected_perc;
 			}
 			
 			//System.out.println(angle);
@@ -533,9 +535,13 @@ public class View extends JPanel {
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
-			segment_per_lvl	.add(segment);
+			segment_per_lvl.add(segment);
 			pos += angle;
+			a = angle;
 		}
+		
+		System.out.println("segments length: " + segment_per_lvl.size());
+		System.out.println("angle * length " + (a * segments.size()));
 		
 	
 		segments.put(level, segment_per_lvl);
