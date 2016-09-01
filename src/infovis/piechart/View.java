@@ -7,12 +7,21 @@ import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -39,7 +48,7 @@ public class View extends JPanel {
 	public int max_level = 5;
 	public int level = 0;
 	
-	private static HashMap<Integer, HashMap<String, Data>> data_map = new HashMap<>();
+	private static HashMap<Integer, HashMap<String, Data>> data_map = new LinkedHashMap<>();
 	public HashMap< Integer, ArrayList<Segment>> segments = new HashMap<Integer, ArrayList<Segment>>();
 	public ArrayList<String> selected_segments = new ArrayList<>();
 	public String[] labels;
@@ -53,7 +62,7 @@ public class View extends JPanel {
 	
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
-	public void initialize() throws IOException {
+	public void initialize() throws IOException, ClassNotFoundException {
 		width = getWidth();
 		height = getHeight();
 		
@@ -62,7 +71,26 @@ public class View extends JPanel {
 		
 		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
 		
-		readData();
+		// check if datamap file exists:
+		String datamap_path = "data/datamap.ser";
+		File f = new File(datamap_path);
+		if(f.exists()) {
+			// read
+		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
+		    ObjectInput input = new ObjectInputStream (buffer);
+		    data_map = new LinkedHashMap<>((HashMap<Integer, HashMap<String, Data>>) input.readObject());
+		    //System.out.println(((HashMap<Integer, String>) input.readObject()).get(2015));
+		} else {
+			// save
+			readData();
+			DataMap serialize_object = new DataMap();
+			serialize_object.data_map = new LinkedHashMap<>(data_map);
+			//serialize_object.data_map = new HashMap<>(data_map);
+			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(datamap_path));
+			os.writeObject(serialize_object.data_map);
+			os.close();
+		}
+		
 		//printData();
 	}
 	
@@ -114,7 +142,7 @@ public class View extends JPanel {
 			if (!data.equals("year")) {
 				new_year = Integer.parseInt(data);
 				if (new_year != old_year){
-					HashMap<String, Data> map = new HashMap<>();
+					HashMap<String, Data> map = new LinkedHashMap<>();
 					map.put("birth", new Data(new_year, "birth"));
 					map.put("death", new Data(new_year, "death"));
 					data_map.put(new_year, map);
@@ -276,6 +304,7 @@ public class View extends JPanel {
 		}
 		level = dirs.length - 1;
 		
+		// ********** TIMELINE RECTANGLE********** //
 		g2D.setColor(Color.BLACK);
 		g2D.fill(timeline_rectangle);
 		g2D.draw(timeline_rectangle);
@@ -283,6 +312,68 @@ public class View extends JPanel {
 		// marker rectangle
 //		g2D.setColor(Color.GREEN);
 //		g2D.draw(markerRectangle);
+		
+		
+		// ********** DIAGRAM ********** //
+		int diagram_line_y = (int) (timeline_y * 0.25);
+		g2D.setColor(Color.BLACK);
+		g2D.drawLine(25, diagram_line_y, width / 4 - 25, diagram_line_y);
+		g2D.drawString("1950", 25, diagram_line_y + 22);
+		g2D.drawString("2015", width / 4 - 50, diagram_line_y + 22);
+		
+		int y_min = diagram_line_y - 4;
+		int y_max = 25 + 8;
+		
+		int x_min = 25;
+		int x_max = width / 4 - 25;
+		
+		g2D.drawLine(25, diagram_line_y, 25, 25);
+		g2D.drawString("min", 25 - 24, y_min);		
+		g2D.drawString("max", 25 - 24, y_max);
+		
+		// draw lines
+		int x_coord = 25;
+		int y_coord = diagram_line_y;
+		int pixel_per_year = (x_max - x_min) / 65;
+		
+		
+		double min = Integer.MAX_VALUE;
+		double max = 0;
+		for (int i = 1950; i < 2017; i++) {
+			for (Segment s : segments.get(level)) {
+				max = s.percent > max ? s.percent : max;
+				min = s.percent < min ? s.percent : min;
+			}
+		}
+		
+		max *= 100;
+		min *= 100;
+		
+		
+		int last_x = 0;
+		int last_y = 25;
+		
+		for (Segment s : segments.get(level)) {
+			last_x = data_map.get("1950").get(s.label).getValues().get(s.label);
+			
+		
+			
+		}
+		
+
+
+		int pixel_per_min_max = (int) ((y_min - y_max) / (max - min));
+		
+		for (int i = 1951; i < 2017; i++) {
+			for (Segment s : segments.get(level)) {
+				Data d = data_map.get("" + i).get(s.label);
+				int y = (int) (y_coord - (pixel_per_min_max) * d.getValues().get(s.label));
+				g2D.drawLine(x_coord, (int) (y_coord - (pixel_per_min_max) * s.percent), last_x, last_y);
+				last_x  = x_coord;
+				last_y = y;
+				x_coord += pixel_per_year;
+			}
+		}
 
 	}
 

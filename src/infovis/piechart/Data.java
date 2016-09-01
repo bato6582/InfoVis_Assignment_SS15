@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class Data {
+public class Data implements Serializable {
 	
 	private int year = 0;
 	String name = "";
@@ -21,9 +22,7 @@ public class Data {
 	
 	public HashMap<String, Data> children = new LinkedHashMap<>();
 	private HashMap<String, Integer> values = new LinkedHashMap<>();
-	
-	BufferedReader reader;
-	BufferedReader birth_age_reader = new BufferedReader(new FileReader("data/birth_age.csv"));
+
 	
 	public Data(int y, String n) throws IOException {
 		year = y;
@@ -34,13 +33,10 @@ public class Data {
 		} else if (name.equals("death")) { 
 			path = "data/Tode_Monat_Sex_1950-2015.csv";
 		}
-		reader = new BufferedReader(new FileReader(path));
-		readData();
-		reader.close();
 		
-		reader = new BufferedReader(new FileReader(path));
+		readData();
+		
 		createChildren();
-		reader.close();
 	}
 	
 	public Data(int y, int lvl, String n, String p, ArrayList<String> p_list) throws IOException {
@@ -58,14 +54,11 @@ public class Data {
 		} else if (name.equals("death")) { 
 			path = "data/Tode_Monat_Sex_1950-2015.csv";
 		}
-		reader = new BufferedReader(new FileReader(path));
+		
 		readData();
-		reader.close();
 		
 		if (level < 4) {
-			reader = new BufferedReader(new FileReader(path));
 			createChildren();
-			reader.close();
 		}
 	}
 	
@@ -81,6 +74,7 @@ public class Data {
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
 			new_parent_list.add(name);
 			
+			BufferedReader reader = new BufferedReader(new FileReader(path));
 			String line = reader.readLine();
 			String[] words = line.split(";");
 			for (String word : words) {
@@ -172,6 +166,7 @@ public class Data {
 	
 	
 	private void readBirth() throws NumberFormatException, IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -191,10 +186,11 @@ public class Data {
 			}
 		}
 		values.put("birth", number);
-		
+		reader.close();
 	}
 	
 	private void readDeath() throws NumberFormatException, IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -213,11 +209,13 @@ public class Data {
 			}
 		}
 		values.put("death", number);
+		reader.close();
 	}
 	
 	
 	
 	private void readSex() throws NumberFormatException, IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -239,10 +237,12 @@ public class Data {
 		}
 		values.put("male", number_male);
 		values.put("female", number_female);
+		reader.close();
 	}
 	
 
 	private void readMonth() throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -260,10 +260,12 @@ public class Data {
 				}
 			}
 		}
+		reader.close();
 	}
 	
 	
 	private void readAgeMother() throws NumberFormatException, IOException {
+		BufferedReader birth_age_reader = new BufferedReader(new FileReader("data/birth_age.csv"));
 		String line = null;
 		
 		String age = "";
@@ -287,6 +289,7 @@ public class Data {
 		if (age.equals("")) { // no content for year
 			values.put("No values available for this year", 1);
 		}
+		birth_age_reader.close();
 	}
 	
 
