@@ -206,7 +206,7 @@ public class View extends JPanel {
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
 			
 			radius = next_radius;
-			if(i == dirs.length - 1){
+			if (i == dirs.length - 1) {
 				next_radius -= 30 + max_radius/(dirs.length);
 			} else {
 				next_radius -= max_radius/(dirs.length);
@@ -214,8 +214,24 @@ public class View extends JPanel {
 			
 			//System.out.println("radius " + radius);
 			try {
+				Ellipse2D.Double circle; 
+				int border_offset = 10;
+				if (i != dirs.length - 1) {
+					g2D.setColor(Color.BLACK);
+					circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
+					g2D.fill(circle);
+				    g2D.draw(circle);
+					// ********** SEPARATION CIRCLE ********** //
+					int separation_offset = 8;
+					g2D.setColor(Color.WHITE);
+					circle = new Ellipse2D.Double(center.getX() - radius - separation_offset, center.getY() - radius - separation_offset, 2.0 * (radius + separation_offset), 2.0 * (radius + separation_offset));
+					g2D.fill(circle);
+				    g2D.draw(circle);
+				}
+				// ********** OUTER SEPARATION CIRCLE ********** //
+				border_offset = 2;
 				g2D.setColor(Color.BLACK);
-				Ellipse2D.Double circle = new Ellipse2D.Double(center.getX() - radius - 3, center.getY() - radius - 3, 2.0 * (radius + 3), 2.0 * (radius + 3));
+				circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
 				g2D.fill(circle);
 			    g2D.draw(circle);
 			    if (i == dirs.length - 1) {
