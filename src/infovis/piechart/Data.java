@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class Data {
 	
@@ -16,15 +17,27 @@ public class Data {
 	ArrayList<String> parent_list = new ArrayList<>();
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
-	private HashMap<String, Data> children = new HashMap<>();
-	private HashMap<String, Integer> values = new HashMap<>();
+	private HashMap<String, Data> children = new LinkedHashMap<>();
+	private HashMap<String, Integer> values = new LinkedHashMap<>();
+	
+	BufferedReader reader;
 	
 	public Data(int y, String n) throws IOException {
 		year = y;
 		name = n;
-		readData();
 		
+		if (name.equals("birth")) {
+			path = "data/Geburten_Monat_Sex_1950-2015.csv";
+		} else if (name.equals("death")) { 
+			path = "data/Tode_Monat_Sex_1950-2015.csv";
+		}
+		reader = new BufferedReader(new FileReader(path));
+		readData();
+		reader.close();
+		
+		reader = new BufferedReader(new FileReader(path));
 		createChildren();
+		reader.close();
 	}
 	
 	public Data(int y, int lvl, String n, String p, ArrayList<String> p_list) throws IOException {
@@ -37,10 +50,19 @@ public class Data {
 		path = p;
 		parent_list = p_list;
 		
+		if (name.equals("birth")) {
+			path = "data/Geburten_Monat_Sex_1950-2015.csv";
+		} else if (name.equals("death")) { 
+			path = "data/Tode_Monat_Sex_1950-2015.csv";
+		}
+		reader = new BufferedReader(new FileReader(path));
 		readData();
+		reader.close();
 		
 		if (level < 5) {
+			reader = new BufferedReader(new FileReader(path));
 			createChildren();
+			reader.close();
 		}
 	}
 	
@@ -53,7 +75,6 @@ public class Data {
 //			
 //		}
 		if (addName()) {			
-			BufferedReader reader = new BufferedReader(new FileReader(path));
 			String line = null;
 
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
@@ -73,7 +94,6 @@ public class Data {
 						}
 					}
 				} else {
-					reader.close();
 					//System.out.println(name + "'s children: " + children);
 					return;
 				}
@@ -102,18 +122,9 @@ public class Data {
 		} else if ((name.equals("female")) && word.equals("male") ) {
 
 		} else if ((name.equals("month"))) {
-			data.add(new Data(year, level, "Januar", path, new_parent_list));				
-			data.add(new Data(year, level, "Februar", path, new_parent_list));			
-			data.add(new Data(year, level, "März", path, new_parent_list));			
-			data.add(new Data(year, level, "April", path, new_parent_list));			
-			data.add(new Data(year, level, "Mai", path, new_parent_list));	
-			data.add(new Data(year, level, "Juni", path, new_parent_list));		
-			data.add(new Data(year, level, "Juli", path, new_parent_list));		
-			data.add(new Data(year, level, "August", path, new_parent_list));		
-			data.add(new Data(year, level, "September", path, new_parent_list));			
-			data.add(new Data(year, level, "Oktober", path, new_parent_list));	
-			data.add(new Data(year, level, "November", path, new_parent_list));		
-			data.add(new Data(year, level, "Dezember", path, new_parent_list));		
+			for (String month : months_ordered) {
+				data.add(new Data(year, level, month, path, new_parent_list));
+			}	
 			
 			
 		} else {
@@ -138,15 +149,15 @@ public class Data {
 	private void readData() throws IOException {
 		
 		if (name.equals("birth")) {
-			path = "data/Geburten_Monat_Sex_1950-2015.csv";
 			readBirth();
 		} else if (name.equals("death")) { 
-			path = "data/Tode_Monat_Sex_1950-2015.csv";
 			readDeath();
 		} else if (name.equals("month")) { 
 			readMonth();
 		} else if (name.equals("sex")) {
 			readSex();
+		} else if (name.equals("sex")) {
+			readName();
 		} else {
 			//...
 		}
@@ -157,8 +168,6 @@ public class Data {
 	
 	
 	private void readBirth() throws NumberFormatException, IOException {
-//		System.out.println("path" + path);
-		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -178,12 +187,10 @@ public class Data {
 			}
 		}
 		values.put("birth", number);
-		reader.close();
 		
 	}
 	
 	private void readDeath() throws NumberFormatException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -202,14 +209,11 @@ public class Data {
 			}
 		}
 		values.put("death", number);
-		
-		reader.close();
 	}
 	
 	
 	
 	private void readSex() throws NumberFormatException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -231,13 +235,10 @@ public class Data {
 		}
 		values.put("male", number_male);
 		values.put("female", number_female);
-		
-		reader.close();
 	}
 	
 
 	private void readMonth() throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
 		String[] header = null;
 		
@@ -255,7 +256,28 @@ public class Data {
 				}
 			}
 		}
-		reader.close();
+	}
+	
+	
+	private void readName() throws NumberFormatException, IOException {
+		String line = null;
+		String[] header = null;
+		
+		int number = 0;
+		
+		while ((line = reader.readLine()) != null) {
+			
+			String[] words = line.split(";");
+			if (words[0].equals("year")) {
+				header = words;
+				
+			} else {
+				if (words[0].equals(year + "")) {
+					number += Integer.parseInt(getValueOfCell(header, words, "number"));
+				}
+			}
+		}
+		values.put("death", number);
 	}
 	
 
