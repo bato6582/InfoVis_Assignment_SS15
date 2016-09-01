@@ -9,8 +9,11 @@ import javax.swing.JTextField;
 
 public class KeyboardController extends JFrame implements KeyListener{
 	private boolean ctrl_pressed = false;
-	
-	
+	private View view = null;
+
+	public void setView(View view) {
+		this.view = view;
+	}
 	
 	public boolean getCtrl_pressed() {
 		return ctrl_pressed;
@@ -20,7 +23,10 @@ public class KeyboardController extends JFrame implements KeyListener{
 	public void keyPressed(KeyEvent e) {
 		// 17 == ctrl
 		if (e.getKeyCode() == 17) {
-			ctrl_pressed = true;
+			view.ctrl_pressed = true;
+			view.selection_chosen = false;
+			view.repaint();
+			
 //			System.out.println("pressed KeyCode: " + e.getKeyCode());
 		}
 	}
@@ -29,7 +35,9 @@ public class KeyboardController extends JFrame implements KeyListener{
 	public void keyReleased(KeyEvent e) {
 		// 17 == ctrl
 		if (e.getKeyCode() == 17) {
-			ctrl_pressed = false;
+			view.ctrl_pressed = false;
+			view.selection_chosen = true;
+			view.repaint();
 //			System.out.println("released KeyCode: " + e.getID());
 		}
 	}

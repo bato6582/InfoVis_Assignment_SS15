@@ -23,7 +23,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	
 	private KeyboardController key_controller = null;
 	
-	public void set_key_controller (KeyboardController k) {
+	public void setKeyController (KeyboardController k) {
 		key_controller = k;
 	}
 	
@@ -35,7 +35,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 				for (Segment s : view.segments.get(i)) {
 					if (s.poly.contains(e.getX(), e.getY())) {
 						
-						if (key_controller.getCtrl_pressed()) {
+						if (view.ctrl_pressed) {
 							 if (i == view.level) {
 								 System.out.println("SegmentClicked");
 								 if (view.selected_segments.contains(s.label)) {
@@ -43,12 +43,13 @@ public class MouseController implements MouseListener, MouseMotionListener {
 									 view.selected_segments.remove(s.label);
 									 System.out.println("CASE 2" + view.selected_segments.size());
 								 } else {
-								 view.selected_segments.add(s.label);
+									 view.selected_segments.add(s.label);
 								 }
 							 }
 						} else {
 							view.clicked(s.label, i);
 							view.selected_segments.clear();
+							view.selection_chosen = false;
 						}
 						return;
 					}
@@ -140,7 +141,6 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	public void setModel(Model model) {
 		this.model = model;
 	}
-
 
 
 }

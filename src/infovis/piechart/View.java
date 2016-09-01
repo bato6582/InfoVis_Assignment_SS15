@@ -27,6 +27,8 @@ public class View extends JPanel {
 	
 	public int year = 2015;
 	public boolean change_time = false;
+	public boolean selection_chosen = false;
+	public boolean ctrl_pressed = false;
 
 	public int timeline_x_start = 50;
 	public int timeline_x_end= 0;
@@ -472,7 +474,7 @@ public class View extends JPanel {
 		
 		// sum of selected/unselected percentages
 		for (int i = 0; i < percentages.length; i++) {
-			if (selected_segments.contains(labels[i]) && !categoric) {
+			if (selected_segments.contains(labels[i]) && !categoric  && selection_chosen) {
 				selected_index_list.add(i);
 				selected_perc += percentages[i];
 			} else {
@@ -498,6 +500,7 @@ public class View extends JPanel {
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			
+			
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
@@ -516,8 +519,12 @@ public class View extends JPanel {
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
 			start_pos = Segment.rotatePoint(start_pos, center, pos);
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
-			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			if (!selected_segments.contains(labels[i]) && ctrl_pressed ) {
+				clr = new Color(clr.getRed(), clr.getRed(), clr.getRed() , (int) (clr.getAlpha() * 0.8));
+			}
+
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
