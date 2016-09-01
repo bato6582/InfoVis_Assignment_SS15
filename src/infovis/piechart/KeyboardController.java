@@ -27,8 +27,14 @@ public class KeyboardController extends JFrame implements KeyListener{
 			view.selection_chosen = false;
 			view.repaint();
 			
-//			System.out.println("pressed KeyCode: " + e.getKeyCode());
+		} else if (e.getKeyCode() == 16) {
+			//16 == shift
+			view.shift_pressed = true;
+			view.repaint();
 		}
+//			System.out.println("pressed KeyCode: " + e.getKeyCode());
+		
+		
 	}
 
 	@Override
@@ -39,6 +45,10 @@ public class KeyboardController extends JFrame implements KeyListener{
 			view.selection_chosen = true;
 			view.repaint();
 //			System.out.println("released KeyCode: " + e.getID());
+		} else if (e.getKeyCode() == 16) {
+			//16 == shift
+			view.shift_pressed = false;
+			view.repaint();
 		}
 	}
 

@@ -265,16 +265,14 @@ public class Data {
 	
 	private void readAgeMother() throws NumberFormatException, IOException {
 		String line = null;
-		String[] header = null;
+		
+		String age = "";
 		
 		while ((line = birth_age_reader.readLine()) != null) {
 			String[] words = line.split(";");
-			if (words[0].equals("year")) {
-				header = words;
-				
-			} else {
-				if (words[0].equals(year + "")) {
-					String age = words[1];
+			if (!words[0].equals("year")) { // not first row
+				if (words[0].equals(year + "")) { // right year
+					age = words[1];
 					int number = Integer.parseInt(words[2]);
 					values.put(age, number);
 					if (!all_mother_ages.contains(age)) {
@@ -282,6 +280,9 @@ public class Data {
 					}
 				}
 			}
+		}
+		if (age.equals("")) { // no content for year
+			values.put("No values available for this year", 1);
 		}
 	}
 	

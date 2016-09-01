@@ -29,6 +29,7 @@ public class View extends JPanel {
 	public boolean change_time = false;
 	public boolean selection_chosen = false;
 	public boolean ctrl_pressed = false;
+	public boolean shift_pressed = false;
 
 	public int timeline_x_start = 50;
 	public int timeline_x_end= 0;
@@ -474,7 +475,7 @@ public class View extends JPanel {
 		
 		// sum of selected/unselected percentages
 		for (int i = 0; i < percentages.length; i++) {
-			if (selected_segments.contains(labels[i]) && !categoric  && selection_chosen) {
+			if ((selected_segments.contains(labels[i]) && !categoric  && selection_chosen)) {
 				selected_index_list.add(i);
 				selected_perc += percentages[i];
 			} else {
@@ -485,6 +486,7 @@ public class View extends JPanel {
 		if (unselected_perc < part_unselected / 360) {
 			part_unselected = unselected_perc * 360;
 		}
+		
 		
 		// calc polygons for selected values
 		double pos = 0;
@@ -512,9 +514,12 @@ public class View extends JPanel {
 		// calc polygons for unselected values
 		for (int i : unselected_index_list) {
 			double angle = -360 * percentages[i];
-			if (selected_index_list.size() != 0) {
+			if (shift_pressed && ctrl_pressed) {
+				angle = -360 / labels.length;
+			} else if (selected_index_list.size() != 0) {
 				angle = -part_unselected * percentages[i] / unselected_perc;
 			}
+			
 			//System.out.println(angle);
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
 			start_pos = Segment.rotatePoint(start_pos, center, pos);
@@ -559,8 +564,10 @@ public class View extends JPanel {
 			String string = s.label;
 			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
-			string = Math.round(s.percent*1000) / 10.0 + " %";
-			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+			if (!categoric) {
+				string = Math.round(s.percent*1000) / 10.0 + " %";
+				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+			}
 			g2D.setColor(s.color);
 		}
 	}
