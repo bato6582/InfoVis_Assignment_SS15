@@ -17,10 +17,13 @@ public class Data {
 	ArrayList<String> parent_list = new ArrayList<>();
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
-	private HashMap<String, Data> children = new LinkedHashMap<>();
+	private ArrayList<String> all_mother_ages = new ArrayList<>();
+	
+	public HashMap<String, Data> children = new LinkedHashMap<>();
 	private HashMap<String, Integer> values = new LinkedHashMap<>();
 	
 	BufferedReader reader;
+	BufferedReader birth_age_reader = new BufferedReader(new FileReader("data/birth_age.csv"));
 	
 	public Data(int y, String n) throws IOException {
 		year = y;
@@ -59,7 +62,7 @@ public class Data {
 		readData();
 		reader.close();
 		
-		if (level < 5) {
+		if (level < 4) {
 			reader = new BufferedReader(new FileReader(path));
 			createChildren();
 			reader.close();
@@ -75,27 +78,18 @@ public class Data {
 //			
 //		}
 		if (addName()) {			
-			String line = null;
-
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
 			new_parent_list.add(name);
 			
-			while ((line = reader.readLine()) != null) {
+			String line = reader.readLine();
+			String[] words = line.split(";");
+			for (String word : words) {
+				ArrayList<Data> data = getChildrenData(word, new_parent_list);
 				
-				String[] words = line.split(";");
-				if (words[0].equals("year")) {
-					for (String word : words) {
-						ArrayList<Data> data = getChildrenData(word, new_parent_list);
-						
-						for (Data entry : data) {
-							if (entry != null) {
-								children.put(entry.name, entry);						
-							}							
-						}
-					}
-				} else {
-					//System.out.println(name + "'s children: " + children);
-					return;
+				for (Data entry : data) {
+					if (entry != null) {
+						children.put(entry.name, entry);						
+					}							
 				}
 			}
 		}
@@ -127,6 +121,8 @@ public class Data {
 			}	
 			
 			
+		} else if (!name.equals("birth") && word.equals("age mother")) {
+			
 		} else {
 			if (!name.equals(word) && !parent_list.contains(word)) {
 				data.add(new Data(year, level, word, path, new_parent_list));
@@ -137,12 +133,20 @@ public class Data {
 
 	private boolean addName() {
 		boolean add = false;
+		if (parent_list.contains("age mother")) {
+			System.out.println(parent_list);
+		}
+			
 		if (parent_list.contains(name)) {
 		} else if (name.equals("male") && parent_list.contains("female")) {
 		} else if (name.equals("female") && parent_list.contains("male")) {
+		} else if (parent_list.size() > 1 && parent_list.get(parent_list.size() - 2) == "name") {
+		} else if (parent_list.contains("age mother")) {
+		} else if (name.equals("age mother")) {
 		} else {
 			add = true;
 		}
+		//System.out.println(add);
 		return add;
 	}
 
@@ -156,8 +160,8 @@ public class Data {
 			readMonth();
 		} else if (name.equals("sex")) {
 			readSex();
-		} else if (name.equals("sex")) {
-			readName();
+		} else if (name.equals("age mother")) {
+			readAgeMother();
 		} else {
 			//...
 		}
@@ -259,25 +263,26 @@ public class Data {
 	}
 	
 	
-	private void readName() throws NumberFormatException, IOException {
+	private void readAgeMother() throws NumberFormatException, IOException {
 		String line = null;
 		String[] header = null;
 		
-		int number = 0;
-		
-		while ((line = reader.readLine()) != null) {
-			
+		while ((line = birth_age_reader.readLine()) != null) {
 			String[] words = line.split(";");
 			if (words[0].equals("year")) {
 				header = words;
 				
 			} else {
 				if (words[0].equals(year + "")) {
-					number += Integer.parseInt(getValueOfCell(header, words, "number"));
+					String age = words[1];
+					int number = Integer.parseInt(words[2]);
+					values.put(age, number);
+					if (!all_mother_ages.contains(age)) {
+						all_mother_ages.add(age);
+					}
 				}
 			}
 		}
-		values.put("death", number);
 	}
 	
 

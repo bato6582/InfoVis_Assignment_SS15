@@ -577,8 +577,27 @@ public class View extends JPanel {
 		
 		if (lvl == dirs.length - 1) { // new level
 			if (lvl < max_level - 1) {
-				current_tree_path += label + "/";
-				level++;				
+				// check if data has children				
+				HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
+				Data data = null;
+				
+				for (String key : dirs) {
+					if (m.get(key) != null) {
+						data = m.get(key);
+						m = data.getChildrenMap();
+					}
+				}
+				if (data == null) {
+					current_tree_path += label + "/";
+					level++;
+				} else {
+					if (data.children.size() != 0) {
+						System.out.println(data.name + "  " + data.children.size());
+						current_tree_path += label + "/";
+						level++;							
+					}
+				}
+				
 			}
 		} else { // jump back to chosen former level
 			current_tree_path = "";
