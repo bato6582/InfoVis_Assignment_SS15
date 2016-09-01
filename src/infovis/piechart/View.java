@@ -7,12 +7,21 @@ import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -39,7 +48,7 @@ public class View extends JPanel {
 	public int max_level = 5;
 	public int level = 0;
 	
-	private static HashMap<Integer, HashMap<String, Data>> data_map = new HashMap<>();
+	private static HashMap<Integer, HashMap<String, Data>> data_map = new LinkedHashMap<>();
 	public HashMap< Integer, ArrayList<Segment>> segments = new HashMap<Integer, ArrayList<Segment>>();
 	public ArrayList<String> selected_segments = new ArrayList<>();
 	public String[] labels;
@@ -53,7 +62,7 @@ public class View extends JPanel {
 	
 	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
-	public void initialize() throws IOException {
+	public void initialize() throws IOException, ClassNotFoundException {
 		width = getWidth();
 		height = getHeight();
 		
@@ -62,7 +71,26 @@ public class View extends JPanel {
 		
 		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
 		
-		readData();
+		// check if datamap file exists:
+		String datamap_path = "data/datamap.ser";
+		File f = new File(datamap_path);
+		if(f.exists()) {
+			// read
+		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
+		    ObjectInput input = new ObjectInputStream (buffer);
+		    data_map = new LinkedHashMap<>((HashMap<Integer, HashMap<String, Data>>) input.readObject());
+		    //System.out.println(((HashMap<Integer, String>) input.readObject()).get(2015));
+		} else {
+			// save
+			readData();
+			DataMap serialize_object = new DataMap();
+			serialize_object.data_map = new LinkedHashMap<>(data_map);
+			//serialize_object.data_map = new HashMap<>(data_map);
+			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(datamap_path));
+			os.writeObject(serialize_object.data_map);
+			os.close();
+		}
+		
 		//printData();
 	}
 	
@@ -114,7 +142,7 @@ public class View extends JPanel {
 			if (!data.equals("year")) {
 				new_year = Integer.parseInt(data);
 				if (new_year != old_year){
-					HashMap<String, Data> map = new HashMap<>();
+					HashMap<String, Data> map = new LinkedHashMap<>();
 					map.put("birth", new Data(new_year, "birth"));
 					map.put("death", new Data(new_year, "death"));
 					data_map.put(new_year, map);
