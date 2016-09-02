@@ -274,17 +274,11 @@ public class Data implements Serializable {
 				if (words[0].equals(year + "")) { // right year
 					age = words[1];
 					int number = Integer.parseInt(words[2]);
-<<<<<<< HEAD
+
 //					System.out.println("NUMBER MOTHER				" + number);
 					if (number != 0) {
 						values.put(age, number);
-						if (!all_mother_ages.contains(age)) {
-							all_mother_ages.add(age);
-						}
-					}
-=======
-					values.put(age, number);
->>>>>>> cad14db7ba374e9f1a79d4e947fbaec4fc589ef7
+					}	
 				}
 			}
 		}

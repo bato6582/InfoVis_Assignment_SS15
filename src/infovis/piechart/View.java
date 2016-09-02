@@ -304,7 +304,7 @@ public class View extends JPanel {
 		}
 		level = dirs.length - 1;
 		
-		// ********** TIMELINE RECTANGLE********** //
+		// ********** TIMELINE RECTANGLE ********** //
 		g2D.setColor(Color.BLACK);
 		g2D.fill(timeline_rectangle);
 		g2D.draw(timeline_rectangle);
@@ -315,65 +315,186 @@ public class View extends JPanel {
 		
 		
 		// ********** DIAGRAM ********** //
-		int diagram_line_y = (int) (timeline_y * 0.25);
-		g2D.setColor(Color.BLACK);
-		g2D.drawLine(25, diagram_line_y, width / 4 - 25, diagram_line_y);
-		g2D.drawString("1950", 25, diagram_line_y + 22);
-		g2D.drawString("2015", width / 4 - 50, diagram_line_y + 22);
-		
-		int y_min = diagram_line_y - 4;
-		int y_max = 25 + 8;
-		
-		int x_min = 25;
-		int x_max = width / 4 - 25;
-		
-		g2D.drawLine(25, diagram_line_y, 25, 25);
-		g2D.drawString("min", 25 - 24, y_min);		
-		g2D.drawString("max", 25 - 24, y_max);
-		
-		// draw lines
-		int x_coord = 25;
-		int y_coord = diagram_line_y;
-		int pixel_per_year = (x_max - x_min) / 65;
-		
-		
-		double min = Integer.MAX_VALUE;
-		double max = 0;
-		for (int i = 1950; i < 2017; i++) {
-			for (Segment s : segments.get(level)) {
-				max = s.percent > max ? s.percent : max;
-				min = s.percent < min ? s.percent : min;
-			}
-		}
-		
-		max *= 100;
-		min *= 100;
-		
-		
-		int last_x = 0;
-		int last_y = 25;
-		
-		for (Segment s : segments.get(level)) {
-			last_x = data_map.get("1950").get(s.label).getValues().get(s.label);
+		//stores values for all 65 years
+		HashMap<String, double[]> category_numbers = new HashMap<String, double[]>();
+		if (level % 2 != 1) {
 			
-		
+			// ********** CALCULATE DATA FOR ALL YEARS ********** //
+			double[] numbers_birth = new double[65];
+			double[] numbers_death = new double[65];
+			
+			HashMap<String, Data> map = new HashMap<String, Data>(data_map.get(year));
+			String[] keys = current_tree_path.split("/");
+			Data data = null;
+			for (String key : keys) {
+				if (map.get(key) != null) {
+					data = map.get(key);
+					map = data.getChildrenMap();
+				}
+			}
+			
+			
+			if (data != null) {
+				Set<String> key_set = data.getValues().keySet();
+				for (String key : key_set) {
+					double[] numbers = new double[65];
+				
+					for (int i = 0; i < 65; i++) {
+						map = new HashMap<String, Data>(data_map.get(i+1950));
+						data = null;
+						for (String k : keys) {
+							if (map.get(k) != null) {
+								data = map.get(k);
+								map = data.getChildrenMap();
+							}
+						}
+						// get current Data
+						double sum = 0.0;
+						//System.out.println(key_set);
+	//					percentages = new double[key_set.size()];
+							
+	//					int iterator = 0;
+	//					for (String key : key_set) {
+	//						double number = data.getValues().get(key);
+	//						percentages[iterator] = number;
+	//						sum += number;
+	//						iterator++;
+	//					}
+//						System.out.println("key: " + key);
+						if (data.getValues().get(key) == null) {
+							numbers[i] = 0;
+							
+						} else {
+							numbers[i] = data.getValues().get(key);
+							
+						}
+					}
+//					System.out.println("key: " + key);
+//					printArray(numbers);
+					category_numbers.put(key, numbers);
+				}
+				System.out.println("cat_nums: " + category_numbers);
+			} else {
+				for (int i = 0; i < 65; i++) {
+					map = new HashMap<String, Data>(data_map.get(i+1950));
+					if (current_tree_path.equals("root/")){
+						
+//						System.out.println(map.get("birth").getValues().get("birth"));
+	//					double num = deaths + births;
+	//					deaths /= num;
+	//					births /= num;
+						
+						
+						// TODO dont set it every year dumbass
+						numbers_birth [i] = map.get("birth").getValues().get("birth");
+						numbers_death [i] = map.get("death").getValues().get("death");
+						
+					} 
+				}
+				category_numbers.put("births", numbers_birth);
+				category_numbers.put("deaths", numbers_death);
+			}
+
+			// ********** DRAW DIAGRAM ********** //
+			
+			int diagram_line_y = (int) (height * 0.5);
+			g2D.setColor(Color.BLACK);
+			g2D.drawLine(25, diagram_line_y, width / 4 - 25, diagram_line_y);
+			g2D.drawString("1950", 25, diagram_line_y + 22);
+			g2D.drawString("2015", width / 4 - 50, diagram_line_y + 22);
+			
+			int y_min = diagram_line_y;
+			int y_max = 25;
+			
+			int x_min = 25;
+			int x_max = width / 4 - 25;
+
+			double min = Integer.MAX_VALUE;
+			double max = 0;
+			
+			// do this allready when collecting data
+			for (String key : category_numbers.keySet()) {
+				
+				for (double p : category_numbers.get(key)) {
+					max = p > max ? p : max;
+					min = p < min ? p : min;
+				}
+			}
+			
+			g2D.drawLine(25, diagram_line_y, 25, 25);
+			g2D.drawString("" + min, 25 - 24, y_min);		
+			g2D.drawString("" + max, 25 - 24, y_max);
+			
+			// ********** DRAW DATA LINES ********** //
+
+			
+//			max *= 100;
+//			min *= 100;
+			
+			double pixel_per_min_max = ((y_min - y_max) / (max - min));
+//			double pixel_per_min_max = ((y_min - y_max) / (max));
+//			System.out.println("pixel_per_min_max: " + pixel_per_min_max);
+//			System.out.println("(" + y_min + " - " + y_max +") / (" + max + " - " + min+")");
+			
+			double diagram_pixel_per_year = (x_max - x_min) / 65;
+			
+			Color clr = new Color(255, 128, 0);
+//			Color clr = Color.RED;
+			int color_gradient = (3 * 255) / (percentages.length + 1);
+			int iter = 0;
+			System.out.println(category_numbers.keySet());
+			for (String key : category_numbers.keySet()) {
+//				System.out.println("key: " + key);
+				
+				int x_coord = 25;
+				int y_coord = diagram_line_y;
+
+				int last_x = 25;
+				double[] tmp_numbers = category_numbers.get(key);
+
+				
+				int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
+//				System.out.println("length: " + TMP_numbers.length);
+				for (Segment s : segments.get(level)){
+					if (s.label.equals(key)) {
+						clr = s.color;
+					}
+				}
+				for (int i = 1; i < tmp_numbers.length; i++) {
+					g2D.setColor(clr);
+		//			last_x = (int) (percentages[i - 1] * 100);
+		//			Data d = data_map.get("" + i).get(s.label);
+					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i] - min) );
+//					int y = (int) (y_min - (pixel_per_min_max) * (TMP_numbers[i]) );
+		//			System.out.println("y: " + y);
+		//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
+					g2D.drawLine(x_coord, y, last_x, last_y);
+//					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
+					last_x  = x_coord;
+					last_y = y;
+					x_coord = x_min + (int) (i * diagram_pixel_per_year);
+			
+//					clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+				}
+//				clr = new Color( min((iter + 1) * color_gradient, 255), min((int) (0.5 * (iter + 1) * color_gradient), 255), min((int) (0.33 * (iter + 1) * color_gradient), 255));
+//				clr = new Color(min(clr.getRed() + 100, 255), min(clr.getGreen() + 50, 255), min(clr.getBlue() + 30, 255), 100);
+				iter++;
+			}
+
+			// ********** DRAW YEAR LINE ********** //
+			
+			g2D.setColor(Color.BLUE);
+			int x_year = 25 + (int) (diagram_pixel_per_year * (year - 1950));
+			g2D.drawLine(x_year, y_min, x_year, y_max);
+			g2D.setColor(Color.BLACK);
+			
+		} else {
+			category_numbers.clear();
+			// ********** DO NOTHING ********** //
 			
 		}
-		
 
-
-		int pixel_per_min_max = (int) ((y_min - y_max) / (max - min));
 		
-		for (int i = 1951; i < 2017; i++) {
-			for (Segment s : segments.get(level)) {
-				Data d = data_map.get("" + i).get(s.label);
-				int y = (int) (y_coord - (pixel_per_min_max) * d.getValues().get(s.label));
-				g2D.drawLine(x_coord, (int) (y_coord - (pixel_per_min_max) * s.percent), last_x, last_y);
-				last_x  = x_coord;
-				last_y = y;
-				x_coord += pixel_per_year;
-			}
-		}
 
 	}
 
@@ -631,8 +752,8 @@ public class View extends JPanel {
 			a = angle;
 		}
 		
-		System.out.println("segments length: " + segment_per_lvl.size());
-		System.out.println("angle * length " + (a * segments.size()));
+//		System.out.println("segments length: " + segment_per_lvl.size());
+//		System.out.println("angle * length " + (a * segments.size()));
 		
 	
 		segments.put(level, segment_per_lvl);
