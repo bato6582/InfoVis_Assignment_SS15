@@ -220,7 +220,6 @@ public class View extends JPanel {
 
 		
 		// ********** SEGMENTS ********** //
-		System.out.println("Path: \"" + current_tree_path + "\"; Level: " + level);
 		for (int i = dirs.length - 1; i >= 0; i--) {
 			// draw segments that are bigger at first to avoid overlaying information
 			String new_tree_path = "";
@@ -373,7 +372,7 @@ public class View extends JPanel {
 //					printArray(numbers);
 					category_numbers.put(key, numbers);
 				}
-				System.out.println("cat_nums: " + category_numbers);
+//				System.out.println("cat_nums: " + category_numbers);
 			} else {
 				for (int i = 0; i < 65; i++) {
 					map = new HashMap<String, Data>(data_map.get(i+1950));
@@ -391,8 +390,8 @@ public class View extends JPanel {
 						
 					} 
 				}
-				category_numbers.put("births", numbers_birth);
-				category_numbers.put("deaths", numbers_death);
+				category_numbers.put("birth", numbers_birth);
+				category_numbers.put("death", numbers_death);
 			}
 
 			// ********** DRAW DIAGRAM ********** //
@@ -442,7 +441,7 @@ public class View extends JPanel {
 //			Color clr = Color.RED;
 			int color_gradient = (3 * 255) / (percentages.length + 1);
 			int iter = 0;
-			System.out.println(category_numbers.keySet());
+//			System.out.println(category_numbers.keySet());
 			for (String key : category_numbers.keySet()) {
 //				System.out.println("key: " + key);
 				
@@ -456,9 +455,12 @@ public class View extends JPanel {
 				int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
 //				System.out.println("length: " + TMP_numbers.length);
 				for (Segment s : segments.get(level)){
+//					System.out.println("searching for: " + key + "		segment: " + s.label);
 					if (s.label.equals(key)) {
+//						System.out.println("is this sleceted?: " + key);
 						if(selected_segments.contains(key) || selected_segments.size() == 0) {
 							clr = s.color;
+//							System.out.println("Found: " + key);
 						} else {
 							clr = Color.WHITE;
 						}
@@ -825,7 +827,7 @@ public class View extends JPanel {
 					level++;
 				} else {
 					if (data.children.size() != 0) {
-						System.out.println(data.name + "  " + data.children.size());
+//						System.out.println(data.name + "  " + data.children.size());
 						current_tree_path += label + "/";
 						level++;							
 					}
