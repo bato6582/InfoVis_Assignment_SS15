@@ -669,7 +669,6 @@ public class View extends JPanel {
 			
 //			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 			String string = s.label;
-			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 			string = Math.round(s.percent*1000) / 10.0 + " %";
 			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
@@ -789,7 +788,6 @@ public class View extends JPanel {
 					
 	//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 				String string = s.label;
-				int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
 				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 				if (!categoric) {
 					string = Math.round(s.percent*1000) / 10.0 + " %";
