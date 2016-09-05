@@ -74,7 +74,7 @@ public class View extends JPanel {
 		// check if datamap file exists:
 		String datamap_path = "data/datamap.ser";
 		File f = new File(datamap_path);
-		if(f.exists()) {
+		if(!f.exists()) {
 			// read
 		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
 		    ObjectInput input = new ObjectInputStream (buffer);

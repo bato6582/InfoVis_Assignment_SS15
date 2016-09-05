@@ -76,12 +76,17 @@ public class Data implements Serializable {
 			String line = reader.readLine();
 			String[] words = line.split(";");
 			for (String word : words) {
-				ArrayList<Data> data = getChildrenData(word, new_parent_list);
+				ArrayList<Data> data = null;
+				if (!word.equals("year") && !word.equals("number")) {
+					data = getChildrenData(word, new_parent_list);
+				}
 				
-				for (Data entry : data) {
-					if (entry != null) {
-						children.put(entry.name, entry);						
-					}							
+				if (data != null) {
+					for (Data entry : data) {
+						if (entry != null) {
+							children.put(entry.name, entry);						
+						}							
+					}
 				}
 			}
 		}
@@ -90,38 +95,57 @@ public class Data implements Serializable {
 
 	private ArrayList<Data> getChildrenData(String word, ArrayList<String> new_parent_list) throws IOException {
 		ArrayList<Data> data = new ArrayList<>();
-		if (word.equals("year") || word.equals("number")) {
-			return data;
-		} else if (name.equals("sex")) {
-			if (word.equals("male")) {
-				data.add(new Data(year, level, "male", path, new_parent_list));								
-			} else if (word.equals("female")) {
-				data.add(new Data(year, level, "female", path, new_parent_list));
-			}
-		} else if ((!name.equals("sex")) && word.equals("female") && !name.equals("female") && !name.equals("male")) {
-			data.add(new Data(year, level, "sex", path, new_parent_list));
 		
-		} else if ((!name.equals("sex")) && word.equals("male") && !name.equals("male") && !name.equals("female") ) {
-			
-		} else if ((name.equals("male")) && word.equals("female") ) {
-			
-		} else if ((name.equals("female")) && word.equals("male") ) {
-
-		} else if ((name.equals("month"))) {
-			for (String month : months_ordered) {
-				data.add(new Data(year, level, month, path, new_parent_list));
-			}	
-			
-			
-		} else if (!name.equals("birth") && word.equals("age mother")) {
-		} else if (!name.equals("death") && word.equals("age")) {
-			
-		} else {
-			if (!name.equals(word) && !parent_list.contains(word)) {
-				data.add(new Data(year, level, word, path, new_parent_list));
+		if (name.equals("female") || parent_list.contains("female")) {
+			if (word.equals("male")) {
+				// nothing
+			} else {
+				if (!parent_list.contains("month")) {
+					data.add(new Data(year, level, "month", path, new_parent_list));
+				}
 			}
+			
+		} else if (name.equals("male") || parent_list.contains("male")) {
+			if (word.equals("female")) {
+				// nothing
+			} else {
+				if (!parent_list.contains("month")) {
+					data.add(new Data(year, level, "month", path, new_parent_list));
+				}
+			}
+		} else {
+			// add female / male
+			if (name.equals("sex")) {
+				if (word.equals("male")) {
+					data.add(new Data(year, level, "male", path, new_parent_list));						
+				} else if (word.equals("female")) {
+					data.add(new Data(year, level, "female", path, new_parent_list));
+				}
+				
+			// add january - december
+			} else if (name.equals("month")) {
+				for (String month : months_ordered) {
+					data.add(new Data(year, level, month, path, new_parent_list));
+				}
+				
+			// add sex
+			} else if ((!name.equals("sex")) && word.equals("female")) {
+				data.add(new Data(year, level, "sex", path, new_parent_list));
+			} else if ((!name.equals("sex")) && word.equals("male")) {
+				// nothing add only for female sex
+			
+			} else if (!name.equals("birth") && word.equals("age mother")) {
+			} else if (!name.equals("death") && word.equals("age")) {
+				
+			} else {
+				if (!name.equals(word) && !parent_list.contains(word)) {
+					data.add(new Data(year, level, word, path, new_parent_list));
+				}
+			}
+			
 		}
 		return data;
+		
 	}
 
 	private boolean addName() {
@@ -217,9 +241,38 @@ public class Data implements Serializable {
 		String line = null;
 		String[] header = null;
 		
+		
+		if (parent_list.contains("month")) {
+			String month = null;
+			for (String mo : months_ordered) {
+				if (parent_list.contains(mo)) {
+					month = mo;					
+				}
+			}
+			if (month != null) {
+				while ((line = reader.readLine()) != null) {
+					
+					String[] words = line.split(";");
+					if (words[0].equals("year")) {
+						header = words;
+						
+					} else {
+						if (words[0].equals(year + "")) {
+							String m = getValueOfCell(header, words, "month");
+							if (month.equals(m)) {
+								values.put("male", Integer.parseInt(getValueOfCell(header, words, "male")));
+								values.put("female", Integer.parseInt(getValueOfCell(header, words, "female")));
+								reader.close();
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
 		int number_male = 0;
 		int number_female = 0;
-		
+
 		while ((line = reader.readLine()) != null) {
 			
 			String[] words = line.split(";");
@@ -235,6 +288,7 @@ public class Data implements Serializable {
 		}
 		values.put("male", number_male);
 		values.put("female", number_female);
+		
 		reader.close();
 	}
 	
@@ -289,7 +343,7 @@ public class Data implements Serializable {
 	}
 	
 	private void readAge() throws NumberFormatException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader("data/death_age_combined.csv"));
+		BufferedReader reader = new BufferedReader(new FileReader("data/death_age.csv"));
 		String line = null;
 		
 		String age = "";
@@ -338,6 +392,17 @@ public class Data implements Serializable {
 			}
 		}
 		return print;
+	}
+	
+	private void printArray(String[] percentages) {
+		if (percentages != null) {
+			
+			System.out.print("[");
+			for (String number : percentages) {
+				System.out.print(number + ", ");
+			}
+			System.out.print("]");
+		}	
 	}
 	
 	
