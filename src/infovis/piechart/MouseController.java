@@ -37,11 +37,11 @@ public class MouseController implements MouseListener, MouseMotionListener {
 						
 						if (view.ctrl_pressed) {
 							 if (i == view.level) {
-								 System.out.println("SegmentClicked");
+//								 System.out.println("SegmentClicked");
 								 if (view.selected_segments.contains(s.label)) {
-									 System.out.println("CASE 1" + view.selected_segments.size());
+//									 System.out.println("CASE 1" + view.selected_segments.size());
 									 view.selected_segments.remove(s.label);
-									 System.out.println("CASE 2" + view.selected_segments.size());
+//									 System.out.println("CASE 2" + view.selected_segments.size());
 								 } else {
 									 view.selected_segments.add(s.label);
 								 }
