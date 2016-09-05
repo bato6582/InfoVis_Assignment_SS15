@@ -412,7 +412,7 @@ public class View extends JPanel {
 			double min = Integer.MAX_VALUE;
 			double max = 0;
 			
-			// do this allready when collecting data
+			// do this already when collecting data
 			for (String key : category_numbers.keySet()) {
 				
 				for (double p : category_numbers.get(key)) {

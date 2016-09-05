@@ -153,7 +153,7 @@ public class Data implements Serializable {
 		} else if (name.equals("age mother")) {
 			readAgeMother();
 		} else if (name.equals("age")) {
-			//readAge();
+			readAge();
 		} else {
 			//...
 		}
@@ -289,7 +289,7 @@ public class Data implements Serializable {
 	}
 	
 	private void readAge() throws NumberFormatException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader("data/death_age.csv"));
+		BufferedReader reader = new BufferedReader(new FileReader("data/death_age_combined.csv"));
 		String line = null;
 		
 		String age = "";
