@@ -457,10 +457,16 @@ public class View extends JPanel {
 //				System.out.println("length: " + TMP_numbers.length);
 				for (Segment s : segments.get(level)){
 					if (s.label.equals(key)) {
-						clr = s.color;
+						if(selected_segments.contains(key) || selected_segments.size() == 0) {
+							clr = s.color;
+						} else {
+							clr = Color.WHITE;
+						}
 					}
 				}
+					
 				for (int i = 1; i < tmp_numbers.length; i++) {
+					x_coord = x_min + (int) (i * diagram_pixel_per_year);
 					g2D.setColor(clr);
 		//			last_x = (int) (percentages[i - 1] * 100);
 		//			Data d = data_map.get("" + i).get(s.label);
@@ -472,7 +478,6 @@ public class View extends JPanel {
 //					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
 					last_x  = x_coord;
 					last_y = y;
-					x_coord = x_min + (int) (i * diagram_pixel_per_year);
 			
 //					clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 				}
