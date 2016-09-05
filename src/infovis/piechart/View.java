@@ -772,26 +772,29 @@ public class View extends JPanel {
 		
 		// draw label
 		for (Segment s : segment_per_lvl) {
-			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
-			double fac = 1 / 255.0;
-			double r = s.color.getRed() * fac;
-			double g = s.color.getGreen() * fac;
-			double b = s.color.getBlue() * fac;
-			r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
-			g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
-			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
-			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
-			
-//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
-			String string = s.label;
-			int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
-			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
-			if (!categoric) {
-				string = Math.round(s.percent*1000) / 10.0 + " %";
-				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+			if(s.label_pos.x != 0 && s.label_pos.y != 0){
+				//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
+				double fac = 1 / 255.0;
+				double r = s.color.getRed() * fac;
+				double g = s.color.getGreen() * fac;
+				double b = s.color.getBlue() * fac;
+				r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
+				g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
+				b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
+				double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+				g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
+				
+					
+	//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
+				String string = s.label;
+				int left_or_right = center.getX() - s.label_pos.getX() > 0 ? 1 : -1;
+				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
+				if (!categoric) {
+					string = Math.round(s.percent*1000) / 10.0 + " %";
+					g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
+				}
+				g2D.setColor(s.color);
 			}
-			g2D.setColor(s.color);
 		}
 	}
 	
