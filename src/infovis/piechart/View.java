@@ -74,7 +74,7 @@ public class View extends JPanel {
 		// check if datamap file exists:
 		String datamap_path = "data/datamap.ser";
 		File f = new File(datamap_path);
-		if(!f.exists()) {
+		if(f.exists()) {
 			// read
 		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
 		    ObjectInput input = new ObjectInputStream (buffer);
@@ -190,7 +190,6 @@ public class View extends JPanel {
 		}
 		
 		if (size_changed) {
-			// TODO: Richtig, dass das alte Jahr verwendet wird???
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
 		}
 
@@ -435,7 +434,7 @@ public class View extends JPanel {
 //			System.out.println("pixel_per_min_max: " + pixel_per_min_max);
 //			System.out.println("(" + y_min + " - " + y_max +") / (" + max + " - " + min+")");
 			
-			double diagram_pixel_per_year = (x_max - x_min) / 65;
+			double diagram_pixel_per_year = (x_max - x_min) / 64.0;
 			
 			Color clr = new Color(255, 128, 0);
 //			Color clr = Color.RED;
@@ -467,12 +466,15 @@ public class View extends JPanel {
 					}
 				}
 					
+				System.out.println("LENGTH: " + tmp_numbers.length);
 				for (int i = 1; i < tmp_numbers.length; i++) {
-					x_coord = x_min + (int) (i * diagram_pixel_per_year);
+//				for (int i = 2; i <= tmp_numbers.length; i++) {
+					x_coord = 25 + (int) ((i) * diagram_pixel_per_year);
 					g2D.setColor(clr);
 		//			last_x = (int) (percentages[i - 1] * 100);
 		//			Data d = data_map.get("" + i).get(s.label);
 					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i] - min) );
+//					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i-1] - min) );
 //					int y = (int) (y_min - (pixel_per_min_max) * (TMP_numbers[i]) );
 		//			System.out.println("y: " + y);
 		//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
@@ -491,7 +493,7 @@ public class View extends JPanel {
 			// ********** DRAW YEAR LINE ********** //
 			
 			g2D.setColor(Color.BLUE);
-			int x_year = 25 + (int) (diagram_pixel_per_year * (year - 1950));
+			int x_year = 25 + (int) (diagram_pixel_per_year * (year - 1950 - 1));
 			g2D.drawLine(x_year, y_min, x_year, y_max);
 			g2D.setColor(Color.BLACK);
 			
