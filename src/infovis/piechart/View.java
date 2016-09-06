@@ -3,6 +3,7 @@ package infovis.piechart;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
@@ -28,12 +29,14 @@ import javax.swing.JPanel;
 public class View extends JPanel {
 
 	public Rectangle2D timeline_rectangle = new Rectangle2D.Double(0, 0, 0, 0);
+	public Polygon diagram_year_triangle = new Polygon();
 
 	private int width;
 	private int height;	
 	
 	public int year = 2015;
 	public boolean change_time = false;
+	public boolean change_time_diagram = false;
 	public boolean selection_chosen = false;
 	public boolean ctrl_pressed = false;
 	public boolean shift_pressed = false;
@@ -321,8 +324,8 @@ public class View extends JPanel {
 		//stores values for all 65 years
 		
 		// ********** CALCULATE DATA FOR ALL YEARS ********** //
-		double[] numbers_birth = new double[65];
-		double[] numbers_death = new double[65];
+		double[] numbers_birth = new double[66];
+		double[] numbers_death = new double[66];
 
 		HashMap<String, Data> map = new HashMap<String, Data>();
 		Data data;
@@ -349,9 +352,9 @@ public class View extends JPanel {
 			
 			Set<String> key_set = data.getValues().keySet();
 			for (String key : key_set) {
-				double[] numbers = new double[65];
+				double[] numbers = new double[66];
 			
-				for (int i = 0; i < 65; i++) {
+				for (int i = 0; i < 66; i++) {
 					map = new HashMap<String, Data>(data_map.get(i+1950));
 					data = null;
 					for (String k : keys) {
@@ -387,143 +390,158 @@ public class View extends JPanel {
 			}
 //			System.out.println("cat_nums: " + category_numbers);
 		} else {
-		for (int i = 0; i < 65; i++) {
-			map = new HashMap<String, Data>(data_map.get(i+1950));
-			if (current_tree_path.equals("root/")){
-				
-		//		System.out.println(map.get("birth").getValues().get("birth"));
-		//		double num = deaths + births;
-		//		deaths /= num;
-		//		births /= num;
-				
-				
-				// TODO dont set it every year dumbass
-				numbers_birth [i] = map.get("birth").getValues().get("birth");
-				numbers_death [i] = map.get("death").getValues().get("death");
-				
-			} 
-		}
-		category_numbers.put("birth", numbers_birth);
-		category_numbers.put("death", numbers_death);
-		}
-
-
-			// ********** DRAW DIAGRAM ********** //
-			int x_min = 75;
-			int x_max = width / 4 - 25;
-
-			int y_min = (int) (height * 0.5);
-			int y_max = 25;
-
-			if (width * 0.5 - max_radius - 10 <= x_max) {
-				Point2D.Double corner_point = Segment.rotatePoint(new Point2D.Double(width * 0.5, height * 0.5 - max_radius), new Point2D.Double(width * 0.5, height * 0.5), -45.0);
-				x_max = (int) (corner_point.getX() - 25);
-				y_min = (int) (corner_point.getY() - 25);
+			for (int i = 0; i < 66; i++) {
+				map = new HashMap<String, Data>(data_map.get(i+1950));
+				if (current_tree_path.equals("root/")){
+					
+			//		System.out.println(map.get("birth").getValues().get("birth"));
+			//		double num = deaths + births;
+			//		deaths /= num;
+			//		births /= num;
+					
+					
+					// TODO dont set it every year dumbass
+					numbers_birth [i] = map.get("birth").getValues().get("birth");
+					numbers_death [i] = map.get("death").getValues().get("death");
+					
+				} 
 			}
-			
-			Rectangle2D.Double bg_rect = new Rectangle2D.Double (x_min, y_max - 2, x_max - x_min, y_min - y_max + 2);
-			g2D.setColor(new Color(180, 180, 180));
-			g2D.fill(bg_rect);
-			g2D.draw(bg_rect);
-			
-			
-			int diagram_line_y = y_min;
-			g2D.setColor(Color.BLACK);
-			g2D.drawLine(x_min, diagram_line_y, x_max, diagram_line_y);
-			g2D.drawString("1950", x_min - 12, diagram_line_y + 16);
-			g2D.drawString("2015", x_max - 20, diagram_line_y + 16);
-			
+			category_numbers.put("birth", numbers_birth);
+			category_numbers.put("death", numbers_death);
+		}
 
-			double min = Integer.MAX_VALUE;
-			double max = 0;
+
+		// ********** DRAW DIAGRAM ********** //
+		int x_min = 75;
+		int x_max = width / 4 - 25;
+
+		int y_min = (int) (height * 0.5);
+		int y_max = 25;
+
+		if (width * 0.5 - max_radius - 10 <= x_max) {
+			Point2D.Double corner_point = Segment.rotatePoint(new Point2D.Double(width * 0.5, height * 0.5 - max_radius), new Point2D.Double(width * 0.5, height * 0.5), -45.0);
+			x_max = (int) (corner_point.getX() - 25);
+			y_min = (int) (corner_point.getY() - 25);
+		}
+		
+		Rectangle2D.Double bg_rect = new Rectangle2D.Double (x_min, y_max - 2, x_max - x_min, y_min - y_max + 2);
+		g2D.setColor(new Color(180, 180, 180));
+		g2D.fill(bg_rect);
+		g2D.draw(bg_rect);
+		
+		double diagram_pixel_per_year = (x_max - x_min) / 65.0;
+		
+		int diagram_line_y = y_min;
+		g2D.setColor(Color.BLACK);
+		g2D.drawLine(x_min, diagram_line_y, x_max, diagram_line_y);
+		g2D.drawString("1950", x_min - 12, diagram_line_y + 16);
+		g2D.drawString("2015", x_max - 20, diagram_line_y + 16);
+		
+
+		double min = Integer.MAX_VALUE;
+		double max = 0;
+		
+		// do this already when collecting data
+		for (String key : category_numbers.keySet()) {
 			
-			// do this already when collecting data
-			for (String key : category_numbers.keySet()) {
-				
-				for (double p : category_numbers.get(key)) {
-					max = p > max ? p : max;
-					min = p < min ? p : min;
-				}
+			for (double p : category_numbers.get(key)) {
+				max = p > max ? p : max;
+				min = p < min ? p : min;
 			}
-			
-			g2D.drawLine(x_min, diagram_line_y, x_min, 25);
-			g2D.drawString("" + min, 10, y_min);		
-			g2D.drawString("" + max, 10, y_max + 4);
-			
-			// ********** DRAW DATA LINES ********** //
+		}
+		
+		g2D.drawLine(x_min, diagram_line_y, x_min, 25);
+		g2D.drawString("" + min, 10, y_min);		
+		g2D.drawString("" + max, 10, y_max + 4);
+		
+		// ********** DRAW DATA LINES ********** //
 
-			
+		
 //			max *= 100;
 //			min *= 100;
-			
-			double pixel_per_min_max = ((y_min - y_max) / (max - min));
+		
+		double pixel_per_min_max = ((y_min - y_max) / (max - min));
 //			double pixel_per_min_max = ((y_min - y_max) / (max));
 //			System.out.println("pixel_per_min_max: " + pixel_per_min_max);
 //			System.out.println("(" + y_min + " - " + y_max +") / (" + max + " - " + min+")");
-			
-			double diagram_pixel_per_year = (x_max - x_min) / 64.0;
-			
-			Color clr = new Color(255, 128, 0);
+		
+		
+		Color clr = new Color(255, 128, 0);
 //			Color clr = Color.RED;
-			int color_gradient = (3 * 255) / (percentages.length + 1);
-			int iter = 0;
+		int color_gradient = (3 * 255) / (percentages.length + 1);
+		int iter = 0;
 //			System.out.println(category_numbers.keySet());
-			for (String key : category_numbers.keySet()) {
+		for (String key : category_numbers.keySet()) {
 //				System.out.println("key: " + key);
-				
-				int x_coord = x_min;
-				int y_coord = diagram_line_y;
+			
+			int x_coord = x_min;
+			int y_coord = diagram_line_y;
 
-				int last_x = x_min;
-				double[] tmp_numbers = category_numbers.get(key);
+			int last_x = x_min;
+			double[] tmp_numbers = category_numbers.get(key);
 
-				
-				int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
-	//			System.out.println("length: " + TMP_numbers.length);
-				for (Segment s : segments.get(level)){
-	//				System.out.println("searching for: " + key + "		segment: " + s.label);
-					if (s.label.equals(key)) {
-	//					System.out.println("is this sleceted?: " + key);
-						if(selected_segments.contains(key) || selected_segments.size() == 0) {
-							clr = s.color;
-	//						System.out.println("Found: " + key);
-						} else {
-							clr = new Color(180, 180, 180);
-						}
+			
+			int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
+//			System.out.println("length: " + TMP_numbers.length);
+			for (Segment s : segments.get(level)){
+//				System.out.println("searching for: " + key + "		segment: " + s.label);
+				if (s.label.equals(key)) {
+//					System.out.println("is this sleceted?: " + key);
+					if(selected_segments.contains(key) || selected_segments.size() == 0) {
+						clr = s.color;
+//						System.out.println("Found: " + key);
+					} else {
+						clr = new Color(180, 180, 180);
 					}
 				}
-
-					
-//				System.out.println("LENGTH: " + tmp_numbers.length);
-				for (int i = 1; i < tmp_numbers.length; i++) {
-//				for (int i = 2; i <= tmp_numbers.length; i++) {
-					x_coord = x_min + (int) ((i) * diagram_pixel_per_year);
-					g2D.setColor(clr);
-		//			last_x = (int) (percentages[i - 1] * 100);
-		//			Data d = data_map.get("" + i).get(s.label);
-					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i] - min) );
-//					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i-1] - min) );
-//					int y = (int) (y_min - (pixel_per_min_max) * (TMP_numbers[i]) );
-		//			System.out.println("y: " + y);
-		//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
-					g2D.drawLine(x_coord, y, last_x, last_y);
-//					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
-					last_x  = x_coord;
-					last_y = y;
-			
-//					clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
-				}
-//				clr = new Color( min((iter + 1) * color_gradient, 255), min((int) (0.5 * (iter + 1) * color_gradient), 255), min((int) (0.33 * (iter + 1) * color_gradient), 255));
-//				clr = new Color(min(clr.getRed() + 100, 255), min(clr.getGreen() + 50, 255), min(clr.getBlue() + 30, 255), 100);
-				iter++;
 			}
 
-			// ********** DRAW YEAR LINE ********** //
-			
-			g2D.setColor(Color.BLUE);
-			int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950 - 1));
-			g2D.drawLine(x_year, y_min, x_year, y_max);
-			g2D.setColor(Color.BLACK);
+				
+//				System.out.println("LENGTH: " + tmp_numbers.length);
+//				int iter_year=
+			for (int i = 1; i < tmp_numbers.length; i++) {
+//				for (int i = 2; i <= tmp_numbers.length; i++) {
+				x_coord = x_min + (int) Math.round((i) * diagram_pixel_per_year);
+				g2D.setColor(clr);
+	//			last_x = (int) (percentages[i - 1] * 100);
+	//			Data d = data_map.get("" + i).get(s.label);
+				int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i] - min) );
+//					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i-1] - min) );
+//					int y = (int) (y_min - (pixel_per_min_max) * (TMP_numbers[i]) );
+	//			System.out.println("y: " + y);
+	//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
+				g2D.drawLine(last_x, last_y, x_coord, y);
+				g2D.drawLine(x_coord, y_max, x_coord, diagram_line_y);
+//					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
+				last_x  = x_coord;
+				last_y = y;
+		
+//					clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			}
+			iter++;
+		}
+
+		// ********** DRAW YEAR LINE ********** //
+		
+		System.out.println("PixelperYear" + diagram_pixel_per_year);
+		
+		g2D.setColor(Color.BLUE);
+		int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950));
+		if (change_time_diagram && diagram_year_triangle.xpoints[0] <= x_max && diagram_year_triangle.xpoints[0] >= x_min) {
+			x_year = diagram_year_triangle.xpoints[0];
+			year = 1950 + (int) Math.round((x_year - x_min - 2) / diagram_pixel_per_year);
+			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
+		} else {
+			System.out.println("xpos: " + diagram_year_triangle.xpoints[0]  + "   xmax: " +x_max);
+		}
+		
+		int[] tri_xs = new int[] {x_year, x_year + 8, x_year - 8};
+		int[] tri_ys = new int[] {y_max, y_max - 8, y_max - 8};
+		diagram_year_triangle = new Polygon (tri_xs, tri_ys, 3);
+		g2D.fill(diagram_year_triangle);
+		g2D.draw(diagram_year_triangle);
+		g2D.drawLine(x_year, y_min, x_year, y_max);
+		g2D.setColor(Color.BLACK);
 
 			
 		

@@ -30,7 +30,6 @@ public class PieChart {
 	   
 	   mouse_controller.setModel(model);
 	   mouse_controller.setView(view);
-	   mouse_controller.setKeyController(key_controller);
 
 	   key_controller.setView(view);
 	}
