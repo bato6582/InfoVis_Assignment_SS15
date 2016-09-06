@@ -264,6 +264,12 @@ public class View extends JPanel {
 			    } else {
 			    	drawInnerData(center, radius, g2D, next_radius);			    	
 			    }
+			    for (Segment s : segments.get(level)) {
+					g2D.setColor(s.color);
+					g2D.fill(s.poly);
+					g2D.drawPolygon(s.poly);
+				}
+			    drawLabels(g2D);
 			
 				
 			} catch (IOException e) {
@@ -504,8 +510,19 @@ public class View extends JPanel {
 
 
 	private void setPercentages(HashMap<String, Data> map, String new_current_tree_path){
-		//System.out.println("New Path: " + new_current_tree_path);
-		if (categoric) {			
+		if (new_current_tree_path.equals("root/")){
+			// init piechart
+			double births = map.get("birth").getValues().get("birth");
+			double deaths = map.get("death").getValues().get("death");		
+			
+			double num = deaths + births;
+			deaths /= num;
+			births /= num;
+			
+			percentages = new double[] {births, deaths};
+			labels = new String[] {"birth", "death"};
+			
+		} else if (categoric) {			
 			root = getRootData(new_current_tree_path); 
 			
 			Set<String> key_set = root.getChildrenMap().keySet();
@@ -514,65 +531,38 @@ public class View extends JPanel {
 			for (int i = 0; i < key_set.size(); i++) {
 				percentages[i] = 1.0 / key_set.size();
 			}
-			
-
-			if (root == null) {
-				labels = new String[] {"birth", "death"};
-			} else {
-				labels = root.getChildrenMap().keySet().toArray(new String[root.getChildrenMap().keySet().size()]);
-			}
+			labels = root.getChildrenMap().keySet().toArray(new String[root.getChildrenMap().keySet().size()]);
 			
 		} else {
-		
-			if (new_current_tree_path.equals("root/")){
-				double births = map.get("birth").getValues().get("birth");
-				double deaths = map.get("death").getValues().get("death");
-	//			System.out.print("births: " + births);			
-	//			System.out.print("deaths: " + deaths);			
-				
-				double num = deaths + births;
-				deaths /= num;
-				births /= num;
-	//			root = dataMap.get(year).get
-				
-				labels = new String[] {"birth", "death"};
-				
-				percentages = new double[] {births, deaths};
-				
-			} else {
-				// get current Data
-				root = getRootData(new_current_tree_path);
-				
-				// get Percentages
-				double sum = 0.0;
-				Set<String> key_set = root.getValues().keySet();
-				//System.out.println(key_set);
-				percentages = new double[key_set.size()];
-				
-				int iterator = 0;
-				for (String key : key_set) {
-					double number = root.getValues().get(key);
-					percentages[iterator] = number;
-					sum += number;
-					iterator++;
-				}
-				
-				for (int i = 0; i < percentages.length; i++) {
-					percentages[i] /= sum;
-				}
-				
-				//printArray(percentages);
-				
-				labels = key_set.toArray(new String[key_set.size()]);
-				
+			root = getRootData(new_current_tree_path);
+			
+			double sum = 0.0;
+			Set<String> key_set = root.getValues().keySet();
+			
+			percentages = new double[key_set.size()];
+			
+			// sum up percentages
+			int iterator = 0;
+			for (String key : key_set) {
+				double number = root.getValues().get(key);
+				percentages[iterator] = number;
+				sum += number;
+				iterator++;
 			}
+			
+			for (int i = 0; i < percentages.length; i++) {
+				percentages[i] /= sum;
+			}
+			labels = key_set.toArray(new String[key_set.size()]);
+			
 		}
 	}
 	
 
+	// go through tree path and return data at the end of the tree path
 	private Data getRootData(String tree_path) {
 		String[] keys = tree_path.split("/");
-		HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
+		HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year));
 		Data data = null;
 		
 		for (String key : keys) {
@@ -584,30 +574,32 @@ public class View extends JPanel {
 		return data;
 	}
 
-
-	public Point2D.Double rotatePoint(Point2D.Double point, Point2D.Double center, double angle) {
-		angle *= Math.PI / 180;
-		double x = center.getX() + (point.getX() -  center.getX()) * Math.cos(angle) - (point.getY() - center.getY()) * Math.sin(angle);
-		double y = center.getY() + (point.getX() -  center.getX()) * Math.sin(angle) + (point.getY() - center.getY()) * Math.cos(angle);
-		return new Point2D.Double(x, y);
-	}
 	
-	
+	// draw segments that are in the inner part of the circle
 	public void drawInnerData(Point2D.Double center, double radius, Graphics2D g2D, double prev_radius) throws IOException {
 		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
 		
-		Color clr = new Color(255, 128, 0);
+		String[] dirs = current_tree_path.split("/");
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 		
+		// create polygons by rotating the points
 		double pos = 0;
 		for (int i = 0; i < percentages.length; i++) {
+
+			// angle
 			double angle = -360 * percentages[i];
 			
-			//System.out.println("Angle: " + angle);
+			// color
+			Color clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
+			clr = new Color(clr.getRed(), clr.getRed(), clr.getRed() , (int) (clr.getAlpha() * 0.5));
+			if (labels[i].equals(dirs[level + 1])) {// mark chosen parents as blue
+				clr = new Color (0, 0, 102);
+			}
+			
+			// points
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
 			start_pos = Segment.rotatePoint(start_pos, center, pos);
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
-			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
@@ -617,46 +609,6 @@ public class View extends JPanel {
 		}
 		
 		segments.put(level, segment_per_lvl);
-
-		String[] dirs = current_tree_path.split("/");
-		
-		for (Segment s : segments.get(level)) {
-			// ************* Change Color for marking the chosen path **************
-			if (s.label.equals(dirs[level + 1])){
-//					s.color = (new Color( (int) (s.color.getRed() * 0.5), (int) (s.color.getGreen() * 0.5), (int) (s.color.getBlue() * 0.5)));
-//					s.color = Color.GREEN;
-				s.color = new Color (0,0,102);
-				
-			} else {
-				s.color = new Color(s.color.getRed(), s.color.getRed(), s.color.getRed() , (int) (s.color.getAlpha() * 0.5));
-			}
-//				System.out.println("Label: " + s.label + "  Path: " + dirs[level]);
-			g2D.setColor(s.color);
-			g2D.fill(s.poly);
-			g2D.drawPolygon(s.poly);
-		}
-		
-		
-		for (Segment s : segments.get(level)) {
-			//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
-			double fac = 1 / 255.0;
-			double r = s.color.getRed() * fac;
-			double g = s.color.getGreen() * fac;
-			double b = s.color.getBlue() * fac;
-			r = r <= 0.03928 ? r/12.92 : Math.pow((r + 0.055)/1.055, 2.4);
-			g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
-			b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
-			double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-			g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
-			
-			
-//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
-			String string = s.label;
-			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
-			string = Math.round(s.percent*1000) / 10.0 + " %";
-			g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
-			g2D.setColor(s.color);
-		}
 	}
 	
 	
@@ -667,54 +619,59 @@ public class View extends JPanel {
 		int color_gradient = (3 * 255) / (percentages.length + 1);
 
 		double selected_perc = 0;
-		ArrayList<Integer> selected_index_list = new ArrayList<>();
 		double unselected_perc = 0;
+		ArrayList<Integer> selected_index_list = new ArrayList<>();
 		ArrayList<Integer> unselected_index_list = new ArrayList<>();
 		
 		double part_unselected = 60.0;
 		
 		// sum of selected/unselected percentages
 		for (int i = 0; i < percentages.length; i++) {
-			if ((selected_segments.contains(labels[i]) && !categoric  && selection_chosen)) {
-				selected_index_list.add(i);
+			if ((selected_segments.contains(labels[i]) && !categoric && selection_chosen)) {
 				selected_perc += percentages[i];
+				selected_index_list.add(i);
 			} else {
-				unselected_index_list.add(i);
 				unselected_perc += percentages[i];
+				unselected_index_list.add(i);
 			}
 		}
+		
+		// if unselected parts are smaller than the place, decrease it to the actual size depending on the value * 360
 		if (unselected_perc < part_unselected / 360) {
 			part_unselected = unselected_perc * 360;
 		}
 		
 		
-		// calc polygons for selected values
+		// calculate polygons for selected values
 		double pos = 0;
-		double a = 0;
 		for (int i : selected_index_list) {
-			double angle = -360 * percentages[i] / (double) selected_perc;
+			
+			// angle, if no unselected parts are left, use the usual angle
+			double angle = -360 * percentages[i] / (double) selected_perc;			
 			if (unselected_index_list.size() != 0) {		
 				angle = -(360 - part_unselected) * percentages[i] / selected_perc;
 			}
+			
+			// color
+			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 
-			//System.out.println("Angle: " + angle);
+			// points
 			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
 			start_pos = Segment.rotatePoint(start_pos, center, pos);
 			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
-			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
-			
 			
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
 			segment_per_lvl.add(segment);
 			pos += angle;
-			a = angle;
 		}
 		
 	
-		// calc polygons for unselected values
+		// calculate polygons for unselected values
 		for (int i : unselected_index_list) {
+			
+			// angle, if keys are presses use categoric angle and if no parts are selected, use the usual angle
 			double angle = -360 * percentages[i];
 			if (shift_pressed && ctrl_pressed) {
 				angle = -360 / (double) labels.length;
@@ -722,39 +679,30 @@ public class View extends JPanel {
 				angle = -part_unselected * percentages[i] / (double) unselected_perc;
 			}
 			
-			//System.out.println(angle);
-			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
-			start_pos = Segment.rotatePoint(start_pos, center, pos);
-			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);
-			
+			// color
 			clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			if (!selected_segments.contains(labels[i]) && ctrl_pressed ) {
 				clr = new Color(clr.getRed(), clr.getRed(), clr.getRed() , (int) (clr.getAlpha() * 0.8));
 			}
+			
+			// points
+			Point2D.Double start_pos = new Point2D.Double(center.getX(), center.getY() - radius);
+			start_pos = Segment.rotatePoint(start_pos, center, pos);
+			Point2D.Double end_pos = Segment.rotatePoint(start_pos, center, angle);			
 
 			Segment segment = new Segment(labels[i], root, clr, categoric, percentages[i]);
 			segment.createPolygon(center, start_pos, end_pos, radius, angle, labels.length, prev_radius);
 			
 			segment_per_lvl.add(segment);
 			pos += angle;
-			a = angle;
-		}
-		
-//		System.out.println("segments length: " + segment_per_lvl.size());
-//		System.out.println("angle * length " + (a * segments.size()));
-		
+		}		
 	
-		segments.put(level, segment_per_lvl);
-		
-		// draw polygon
-		for (Segment s : segment_per_lvl) {
-			g2D.setColor(s.color);
-			g2D.fill(s.poly);
-			g2D.drawPolygon(s.poly);
-		}
-		
+		segments.put(level, segment_per_lvl);		
+	}
+	
+	private void drawLabels(Graphics2D g2D) {
 		// draw label
-		for (Segment s : segment_per_lvl) {
+		for (Segment s : segments.get(level)) {
 			if(s.label_pos.x != 0 && s.label_pos.y != 0){
 				//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
 				double fac = 1 / 255.0;
@@ -765,11 +713,9 @@ public class View extends JPanel {
 				g = g <= 0.03928 ? g/12.92 : Math.pow((g + 0.055)/1.055, 2.4);
 				b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
 				double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-				g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
 				
-					
-	//			g2D.setColor(new Color(Math.abs(255 - (int) (s.color.getRed() * 1.5)), Math.abs(255 - (int) (s.color.getGreen() * 1.5)), Math.abs(255 - (int) (s.color.getBlue() * 1.5))));
 				String string = s.label;
+				g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
 				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 				if (!categoric) {
 					string = Math.round(s.percent*1000) / 10.0 + " %";
@@ -779,7 +725,6 @@ public class View extends JPanel {
 			}
 		}
 	}
-	
 	
 	
 	private int min(int i, int j) {
