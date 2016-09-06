@@ -15,7 +15,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -29,7 +28,6 @@ import javax.swing.JPanel;
 public class View extends JPanel {
 
 	public Rectangle2D timeline_rectangle = new Rectangle2D.Double(0, 0, 0, 0);
-	//private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
 
 	private int width;
 	private int height;	
@@ -39,6 +37,7 @@ public class View extends JPanel {
 	public boolean selection_chosen = false;
 	public boolean ctrl_pressed = false;
 	public boolean shift_pressed = false;
+	private boolean categoric = false;
 
 	public int timeline_x_start = 50;
 	public int timeline_x_end= 0;
@@ -59,8 +58,6 @@ public class View extends JPanel {
 
 	private static Data root = null;
 	private static String current_tree_path = "root/";
-	
-	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
 	public void initialize() throws IOException, ClassNotFoundException {
 		width = getWidth();
@@ -129,8 +126,8 @@ public class View extends JPanel {
 		}	
 	}
 
+	// load years and create data (data will be filled recursively in Data)
 	private static void readData() throws IOException {
-		// load years and create data (data will be filled recursively in Data)
 		BufferedReader reader = new BufferedReader(new FileReader(path_birth));
 		String line = null;
 		
@@ -154,6 +151,7 @@ public class View extends JPanel {
 	}
 
 	
+	// paint method will be called whenever there is an event of the mouse controller or the keyboard controller
 	@Override
 	public void paint(Graphics g) {
 		boolean size_changed = (width != getWidth() || height != getHeight());
@@ -161,22 +159,16 @@ public class View extends JPanel {
 		height = getHeight();
 
 		Graphics2D g2D = (Graphics2D) g;
-		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);		
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);		
 		g2D.clearRect(0, 0, width, height);
 
-		timeline_x_end = width - timeline_x_start;
-		timeline_y = height - 50;
-		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
-//		System.out.println(width);
-//		System.out.println(height);
-		
-//
-//		g2D.setColor(Color.RED);
-//		g2D.fill(dataPoint);
 		
 		
 		// ********** TIMELINE ********** //
+		timeline_x_end = width - timeline_x_start;
+		timeline_y = height - 50;
+		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
+		
 		g2D.setColor(Color.BLACK);
 		g2D.drawLine(50, timeline_y, width - 50, timeline_y);
 		for (int i = 1950; i < 2017; i++) {
@@ -189,23 +181,29 @@ public class View extends JPanel {
 			}
 		}
 		
+		
+		// ********** TIMELINE RECTANGLE ********** //
 		if (size_changed) {
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
 		}
+		g2D.setColor(Color.BLACK);
+		g2D.fill(timeline_rectangle);
+		g2D.draw(timeline_rectangle);
 
 		
 		// ********** YEAR ********** //
-		g2D.setColor(Color.BLACK);
 		year = (int) (((timeline_rectangle.getX() - 50  + pixel_per_year * 0.5) / pixel_per_year + 1950));
+		g2D.setColor(Color.BLACK);
 		g2D.drawString("" + year, width - 50, 15);		
 		
 		
-		String[] dirs = current_tree_path.split("/");
 
 		// ********** TABLE ********** //
-		g2D.setColor(Color.BLACK);
+		String[] dirs = current_tree_path.split("/");
+		
 		int x_left_column = width - 240;
 		int x_right_column = width - 140;
+		g2D.setColor(Color.BLACK);
 		g2D.drawLine(x_left_column, 40, width - 40, 40);
 		g2D.drawLine(x_left_column, 40, width - 240, 40 + 15 * dirs.length);
 		g2D.drawLine(width - 40, 40, width - 40, 40 + 15 * dirs.length);
@@ -220,17 +218,16 @@ public class View extends JPanel {
 		
 		// ********** SEGMENTS ********** //
 		for (int i = dirs.length - 1; i >= 0; i--) {
-			// draw segments that are bigger at first to avoid overlaying information
+			
+			// draw the levels after each other, begin with the outer one to avoid overlaying
 			String new_tree_path = "";
 			for (int j = 0; j <= i; j++ ) {
 				new_tree_path += dirs[j] +"/";
 			}
 			level = i;
-			//System.out.println("level " + level);
-			setPercentages(data_map.get(year), new_tree_path); //changes colors
+			categoric = (level % 2 == 1);
 			
-//			printArray(labels);
-//			printArray(percentages);
+			setPercentages(data_map.get(year), new_tree_path);
 		
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
 			
@@ -240,27 +237,26 @@ public class View extends JPanel {
 			} else {
 				next_radius -= max_radius/(dirs.length);
 			}
-			
-			//System.out.println("radius " + radius);
+
 			try {
 				Ellipse2D.Double circle; 
 				int border_offset = 10;
 				if (i != dirs.length - 1) {
-					g2D.setColor(Color.BLACK);
 					circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
+					g2D.setColor(Color.BLACK);
 					g2D.fill(circle);
 				    g2D.draw(circle);
 					// ********** SEPARATION CIRCLE ********** //
 					int separation_offset = 8;
-					g2D.setColor(Color.WHITE);
 					circle = new Ellipse2D.Double(center.getX() - radius - separation_offset, center.getY() - radius - separation_offset, 2.0 * (radius + separation_offset), 2.0 * (radius + separation_offset));
+					g2D.setColor(Color.WHITE);
 					g2D.fill(circle);
 				    g2D.draw(circle);
 				}
 				// ********** OUTER SEPARATION CIRCLE ********** //
 				border_offset = 2;
-				g2D.setColor(Color.BLACK);
 				circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
+				g2D.setColor(Color.BLACK);
 				g2D.fill(circle);
 			    g2D.draw(circle);
 			    if (i == dirs.length - 1) {
@@ -273,8 +269,9 @@ public class View extends JPanel {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			//Table lower edge per level and Strings
+			
+			// ********** TABLE CONTENT ********** //
+			// Table lower edge per level and Strings
 			g2D.setColor(Color.BLACK);
 			g2D.drawLine(width - 40, 40 + 15 * (i + 1), x_left_column, 40 + 15 * (i + 1));
 			if (i == 0) {
@@ -282,116 +279,111 @@ public class View extends JPanel {
 				g2D.drawString("Wert", x_right_column + 10, 38 + 15 * (i + 1));
 				
 			} else {
+				// fill table with content
 				Segment seg = getSegmentOnLevel(i - 1, dirs[i]);
 				g2D.drawString(dirs[i], x_left_column + 10, 38 + 15 * (i + 1));
-				if (((i-1) % 2) == 0) { // not categoric
-//					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", (int) seg.label_pos.getX(), (int) seg.label_pos.getY());	
+				if (((i-1) % 2) == 0) {
+					// only values that are not categoric
 					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));	
-				}				
-//				Color c = seg.color;
-//				int r = (int) (c.getRed() * 0.5);
-//				int gr = (int) (c.getGreen() * 0.5);
-//				int b = (int) (c.getBlue() * 0.5);
-//				c = new Color (r, gr, b);
-//				g2D.setColor(c);
-//				g2D.fill(seg.poly);
-//				g2D.drawPolygon(seg.poly);
-				
+				}
 			}
+			
 			
 		}
 		level = dirs.length - 1;
-		
-		// ********** TIMELINE RECTANGLE ********** //
-		g2D.setColor(Color.BLACK);
-		g2D.fill(timeline_rectangle);
-		g2D.draw(timeline_rectangle);
-		
-		// marker rectangle
-//		g2D.setColor(Color.GREEN);
-//		g2D.draw(markerRectangle);
+		categoric = (level % 2 == 1);
 		
 		
+
 		// ********** DIAGRAM ********** //
-		//stores values for all 65 years
 		HashMap<String, double[]> category_numbers = new HashMap<String, double[]>();
-		if (level % 2 != 1) {
+		
+		if (!categoric) {
+			drawDiagramData(g2D, category_numbers, max_radius);
 			
-			// ********** CALCULATE DATA FOR ALL YEARS ********** //
-			double[] numbers_birth = new double[65];
-			double[] numbers_death = new double[65];
+		} else {
+			category_numbers.clear();
+			// do nothing
 			
-			HashMap<String, Data> map = new HashMap<String, Data>(data_map.get(year));
-			String[] keys = current_tree_path.split("/");
-			Data data = null;
-			for (String key : keys) {
-				if (map.get(key) != null) {
-					data = map.get(key);
-					map = data.getChildrenMap();
-				}
-			}
+		}
+	}
+
+	
+
+	
+	private void drawDiagramData(Graphics2D g2D, HashMap<String, double[]> category_numbers, double max_radius) {
+		//stores values for all 65 years
+		
+		// ********** CALCULATE DATA FOR ALL YEARS ********** //
+		double[] numbers_birth = new double[65];
+		double[] numbers_death = new double[65];
+		
+		HashMap<String, Data> map = new HashMap<String, Data>(data_map.get(year));
+		String[] keys = current_tree_path.split("/");
+		
+		Data data = getRootData(current_tree_path);
+		if (data != null) {
 			
+			Set<String> key_set = data.getValues().keySet();
+			for (String key : key_set) {
+				double[] numbers = new double[65];
 			
-			if (data != null) {
-				Set<String> key_set = data.getValues().keySet();
-				for (String key : key_set) {
-					double[] numbers = new double[65];
-				
-					for (int i = 0; i < 65; i++) {
-						map = new HashMap<String, Data>(data_map.get(i+1950));
-						data = null;
-						for (String k : keys) {
-							if (map.get(k) != null) {
-								data = map.get(k);
-								map = data.getChildrenMap();
-							}
-						}
-						// get current Data
-						double sum = 0.0;
-						//System.out.println(key_set);
-	//					percentages = new double[key_set.size()];
-							
-	//					int iterator = 0;
-	//					for (String key : key_set) {
-	//						double number = data.getValues().get(key);
-	//						percentages[iterator] = number;
-	//						sum += number;
-	//						iterator++;
-	//					}
-//						System.out.println("key: " + key);
-						if (data.getValues().get(key) == null) {
-							numbers[i] = 0;
-							
-						} else {
-							numbers[i] = data.getValues().get(key);
-							
-						}
-					}
-//					System.out.println("key: " + key);
-//					printArray(numbers);
-					category_numbers.put(key, numbers);
-				}
-//				System.out.println("cat_nums: " + category_numbers);
-			} else {
 				for (int i = 0; i < 65; i++) {
 					map = new HashMap<String, Data>(data_map.get(i+1950));
-					if (current_tree_path.equals("root/")){
+					data = null;
+					for (String k : keys) {
+						if (map.get(k) != null) {
+							data = map.get(k);
+							map = data.getChildrenMap();
+						}
+					}
+					// get current Data
+					double sum = 0.0;
+					//System.out.println(key_set);
+//					percentages = new double[key_set.size()];
+					
+//					int iterator = 0;
+//					for (String key : key_set) {
+//						double number = data.getValues().get(key);
+//						percentages[iterator] = number;
+//						sum += number;
+//						iterator++;
+//					}
+//								System.out.println("key: " + key);
+					if (data.getValues().get(key) == null) {
+						numbers[i] = 0;
 						
-//						System.out.println(map.get("birth").getValues().get("birth"));
-	//					double num = deaths + births;
-	//					deaths /= num;
-	//					births /= num;
+					} else {
+						numbers[i] = data.getValues().get(key);
 						
-						
-						// TODO dont set it every year dumbass
-						numbers_birth [i] = map.get("birth").getValues().get("birth");
-						numbers_death [i] = map.get("death").getValues().get("death");
-						
-					} 
+					}
 				}
-				category_numbers.put("birth", numbers_birth);
-				category_numbers.put("death", numbers_death);
+//				System.out.println("key: " + key);
+//				printArray(numbers);
+				category_numbers.put(key, numbers);
 			}
+//			System.out.println("cat_nums: " + category_numbers);
+		} else {
+		for (int i = 0; i < 65; i++) {
+			map = new HashMap<String, Data>(data_map.get(i+1950));
+			if (current_tree_path.equals("root/")){
+				
+		//		System.out.println(map.get("birth").getValues().get("birth"));
+		//		double num = deaths + births;
+		//		deaths /= num;
+		//		births /= num;
+				
+				
+				// TODO dont set it every year dumbass
+				numbers_birth [i] = map.get("birth").getValues().get("birth");
+				numbers_death [i] = map.get("death").getValues().get("death");
+				
+			} 
+		}
+		category_numbers.put("birth", numbers_birth);
+		category_numbers.put("death", numbers_death);
+		}
+
 
 			// ********** DRAW DIAGRAM ********** //
 			int x_min = 75;
@@ -460,19 +452,20 @@ public class View extends JPanel {
 
 				
 				int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
-//				System.out.println("length: " + TMP_numbers.length);
+	//			System.out.println("length: " + TMP_numbers.length);
 				for (Segment s : segments.get(level)){
-//					System.out.println("searching for: " + key + "		segment: " + s.label);
+	//				System.out.println("searching for: " + key + "		segment: " + s.label);
 					if (s.label.equals(key)) {
-//						System.out.println("is this sleceted?: " + key);
+	//					System.out.println("is this sleceted?: " + key);
 						if(selected_segments.contains(key) || selected_segments.size() == 0) {
 							clr = s.color;
-//							System.out.println("Found: " + key);
+	//						System.out.println("Found: " + key);
 						} else {
 							clr = Color.WHITE;
 						}
 					}
 				}
+
 					
 //				System.out.println("LENGTH: " + tmp_numbers.length);
 				for (int i = 1; i < tmp_numbers.length; i++) {
@@ -504,38 +497,18 @@ public class View extends JPanel {
 			int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950 - 1));
 			g2D.drawLine(x_year, y_min, x_year, y_max);
 			g2D.setColor(Color.BLACK);
-			
-		} else {
-			category_numbers.clear();
-			// ********** DO NOTHING ********** //
-			
-		}
 
+			
 		
-
 	}
 
-	
 
-	
 	private void setPercentages(HashMap<String, Data> map, String new_current_tree_path){
 		//System.out.println("New Path: " + new_current_tree_path);
-		if (level % 2 == 1) {
-			String[] keys = new_current_tree_path.split("/");
+		if (categoric) {			
+			root = getRootData(new_current_tree_path); 
 			
-			HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
-			Data data = null;
-			
-			for (String key : keys) {
-				if (m.get(key) != null) {
-					data = m.get(key);
-					m = data.getChildrenMap();
-				}
-			}
-			
-			root = data;
-			
-			Set<String> key_set = data.getChildrenMap().keySet();
+			Set<String> key_set = root.getChildrenMap().keySet();
 			percentages = new double[key_set.size()];
 			
 			for (int i = 0; i < key_set.size(); i++) {
@@ -568,31 +541,17 @@ public class View extends JPanel {
 				
 			} else {
 				// get current Data
-				String[] keys = new_current_tree_path.split("/");
-				
-				HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
-				Data data = null;
-				
-				// key != key of m, key is part of treepath
-				for (String key : keys) {
-					if (m.get(key) != null) {
-						data = m.get(key);
-						m = data.getChildrenMap();
-					}
-				}
-				
-		
-				root = data;
+				root = getRootData(new_current_tree_path);
 				
 				// get Percentages
 				double sum = 0.0;
-				Set<String> key_set = data.getValues().keySet();
+				Set<String> key_set = root.getValues().keySet();
 				//System.out.println(key_set);
 				percentages = new double[key_set.size()];
 				
 				int iterator = 0;
 				for (String key : key_set) {
-					double number = data.getValues().get(key);
+					double number = root.getValues().get(key);
 					percentages[iterator] = number;
 					sum += number;
 					iterator++;
@@ -611,6 +570,21 @@ public class View extends JPanel {
 	}
 	
 
+	private Data getRootData(String tree_path) {
+		String[] keys = tree_path.split("/");
+		HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
+		Data data = null;
+		
+		for (String key : keys) {
+			if (m.get(key) != null) {
+				data = m.get(key);
+				m = data.getChildrenMap();
+			}
+		}
+		return data;
+	}
+
+
 	public Point2D.Double rotatePoint(Point2D.Double point, Point2D.Double center, double angle) {
 		angle *= Math.PI / 180;
 		double x = center.getX() + (point.getX() -  center.getX()) * Math.cos(angle) - (point.getY() - center.getY()) * Math.sin(angle);
@@ -620,7 +594,6 @@ public class View extends JPanel {
 	
 	
 	public void drawInnerData(Point2D.Double center, double radius, Graphics2D g2D, double prev_radius) throws IOException {
-		boolean categoric = (level % 2) == 0 ? false : true;
 		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
 		
 		Color clr = new Color(255, 128, 0);
@@ -688,7 +661,6 @@ public class View extends JPanel {
 	
 	
 	public void drawOuterData(Point2D.Double center, double radius, Graphics2D g2D, double prev_radius) throws IOException {
-		boolean categoric = (level % 2) == 0 ? false : true;
 		ArrayList<Segment> segment_per_lvl = new ArrayList<Segment>();
 		
 		Color clr = new Color(255, 128, 0);
