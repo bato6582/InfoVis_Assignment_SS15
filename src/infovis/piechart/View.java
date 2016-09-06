@@ -29,7 +29,6 @@ import javax.swing.JPanel;
 public class View extends JPanel {
 
 	public Rectangle2D timeline_rectangle = new Rectangle2D.Double(0, 0, 0, 0);
-	//private Rectangle2D markerRectangle = new Rectangle2D.Double(0, 0, 0, 0);
 
 	private int width;
 	private int height;	
@@ -59,8 +58,6 @@ public class View extends JPanel {
 
 	private static Data root = null;
 	private static String current_tree_path = "root/";
-	
-	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
 	
 	public void initialize() throws IOException, ClassNotFoundException {
 		width = getWidth();
@@ -129,8 +126,8 @@ public class View extends JPanel {
 		}	
 	}
 
+	// load years and create data (data will be filled recursively in Data)
 	private static void readData() throws IOException {
-		// load years and create data (data will be filled recursively in Data)
 		BufferedReader reader = new BufferedReader(new FileReader(path_birth));
 		String line = null;
 		
@@ -154,6 +151,7 @@ public class View extends JPanel {
 	}
 
 	
+	// paint method will be called whenever there is an event of the mouse controller or the keyboard controller
 	@Override
 	public void paint(Graphics g) {
 		boolean size_changed = (width != getWidth() || height != getHeight());
@@ -161,22 +159,16 @@ public class View extends JPanel {
 		height = getHeight();
 
 		Graphics2D g2D = (Graphics2D) g;
-		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);		
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);		
 		g2D.clearRect(0, 0, width, height);
 
-		timeline_x_end = width - timeline_x_start;
-		timeline_y = height - 50;
-		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
-//		System.out.println(width);
-//		System.out.println(height);
-		
-//
-//		g2D.setColor(Color.RED);
-//		g2D.fill(dataPoint);
 		
 		
 		// ********** TIMELINE ********** //
+		timeline_x_end = width - timeline_x_start;
+		timeline_y = height - 50;
+		pixel_per_year = (width - 100) / (double)(2015 - 1950 + 1);
+		
 		g2D.setColor(Color.BLACK);
 		g2D.drawLine(50, timeline_y, width - 50, timeline_y);
 		for (int i = 1950; i < 2017; i++) {
@@ -189,23 +181,29 @@ public class View extends JPanel {
 			}
 		}
 		
+		
+		// ********** TIMELINE RECTANGLE ********** //
 		if (size_changed) {
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
 		}
+		g2D.setColor(Color.BLACK);
+		g2D.fill(timeline_rectangle);
+		g2D.draw(timeline_rectangle);
 
 		
 		// ********** YEAR ********** //
-		g2D.setColor(Color.BLACK);
 		year = (int) (((timeline_rectangle.getX() - 50  + pixel_per_year * 0.5) / pixel_per_year + 1950));
+		g2D.setColor(Color.BLACK);
 		g2D.drawString("" + year, width - 50, 15);		
 		
 		
-		String[] dirs = current_tree_path.split("/");
 
 		// ********** TABLE ********** //
-		g2D.setColor(Color.BLACK);
+		String[] dirs = current_tree_path.split("/");
+		
 		int x_left_column = width - 240;
 		int x_right_column = width - 140;
+		g2D.setColor(Color.BLACK);
 		g2D.drawLine(x_left_column, 40, width - 40, 40);
 		g2D.drawLine(x_left_column, 40, width - 240, 40 + 15 * dirs.length);
 		g2D.drawLine(width - 40, 40, width - 40, 40 + 15 * dirs.length);
@@ -220,17 +218,15 @@ public class View extends JPanel {
 		
 		// ********** SEGMENTS ********** //
 		for (int i = dirs.length - 1; i >= 0; i--) {
-			// draw segments that are bigger at first to avoid overlaying information
+			
+			// draw the levels after each other, begin with the outer one to avoid overlaying
 			String new_tree_path = "";
 			for (int j = 0; j <= i; j++ ) {
 				new_tree_path += dirs[j] +"/";
 			}
 			level = i;
-			//System.out.println("level " + level);
-			setPercentages(data_map.get(year), new_tree_path); //changes colors
 			
-//			printArray(labels);
-//			printArray(percentages);
+			setPercentages(data_map.get(year), new_tree_path);
 		
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
 			
@@ -240,27 +236,26 @@ public class View extends JPanel {
 			} else {
 				next_radius -= max_radius/(dirs.length);
 			}
-			
-			//System.out.println("radius " + radius);
+
 			try {
 				Ellipse2D.Double circle; 
 				int border_offset = 10;
 				if (i != dirs.length - 1) {
-					g2D.setColor(Color.BLACK);
 					circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
+					g2D.setColor(Color.BLACK);
 					g2D.fill(circle);
 				    g2D.draw(circle);
 					// ********** SEPARATION CIRCLE ********** //
 					int separation_offset = 8;
-					g2D.setColor(Color.WHITE);
 					circle = new Ellipse2D.Double(center.getX() - radius - separation_offset, center.getY() - radius - separation_offset, 2.0 * (radius + separation_offset), 2.0 * (radius + separation_offset));
+					g2D.setColor(Color.WHITE);
 					g2D.fill(circle);
 				    g2D.draw(circle);
 				}
 				// ********** OUTER SEPARATION CIRCLE ********** //
 				border_offset = 2;
-				g2D.setColor(Color.BLACK);
 				circle = new Ellipse2D.Double(center.getX() - radius - border_offset, center.getY() - radius - border_offset, 2.0 * (radius + border_offset), 2.0 * (radius + border_offset));
+				g2D.setColor(Color.BLACK);
 				g2D.fill(circle);
 			    g2D.draw(circle);
 			    if (i == dirs.length - 1) {
@@ -273,8 +268,9 @@ public class View extends JPanel {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			//Table lower edge per level and Strings
+			
+			// ********** TABLE CONTENT ********** //
+			// Table lower edge per level and Strings
 			g2D.setColor(Color.BLACK);
 			g2D.drawLine(width - 40, 40 + 15 * (i + 1), x_left_column, 40 + 15 * (i + 1));
 			if (i == 0) {
@@ -282,36 +278,21 @@ public class View extends JPanel {
 				g2D.drawString("Wert", x_right_column + 10, 38 + 15 * (i + 1));
 				
 			} else {
+				// fill table with content
 				Segment seg = getSegmentOnLevel(i - 1, dirs[i]);
 				g2D.drawString(dirs[i], x_left_column + 10, 38 + 15 * (i + 1));
-				if (((i-1) % 2) == 0) { // not categoric
-//					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", (int) seg.label_pos.getX(), (int) seg.label_pos.getY());	
+				if (((i-1) % 2) == 0) {
+					// only values that are not categoric
 					g2D.drawString("" + (Math.round(seg.percent * 1000) / 10.0) + "%", x_right_column + 10, 38 + 15 * (i + 1));	
-				}				
-//				Color c = seg.color;
-//				int r = (int) (c.getRed() * 0.5);
-//				int gr = (int) (c.getGreen() * 0.5);
-//				int b = (int) (c.getBlue() * 0.5);
-//				c = new Color (r, gr, b);
-//				g2D.setColor(c);
-//				g2D.fill(seg.poly);
-//				g2D.drawPolygon(seg.poly);
-				
+				}
 			}
+			
 			
 		}
 		level = dirs.length - 1;
 		
-		// ********** TIMELINE RECTANGLE ********** //
-		g2D.setColor(Color.BLACK);
-		g2D.fill(timeline_rectangle);
-		g2D.draw(timeline_rectangle);
 		
-		// marker rectangle
-//		g2D.setColor(Color.GREEN);
-//		g2D.draw(markerRectangle);
-		
-		
+
 		// ********** DIAGRAM ********** //
 		//stores values for all 65 years
 		HashMap<String, double[]> category_numbers = new HashMap<String, double[]>();
