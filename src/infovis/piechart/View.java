@@ -398,6 +398,10 @@ public class View extends JPanel {
 				y_min = (int) (corner_point.getY() - 25);
 			}
 			
+			Rectangle2D.Double bg_rect = new Rectangle2D.Double (x_min, y_max - 2, x_max - x_min, y_min - y_max + 2);
+			g2D.setColor(new Color(180, 180, 180));
+			g2D.fill(bg_rect);
+			g2D.draw(bg_rect);
 			
 			
 			int diagram_line_y = y_min;
@@ -410,7 +414,7 @@ public class View extends JPanel {
 			double min = Integer.MAX_VALUE;
 			double max = 0;
 			
-			// do this allready when collecting data
+			// do this already when collecting data
 			for (String key : category_numbers.keySet()) {
 				
 				for (double p : category_numbers.get(key)) {
@@ -461,7 +465,7 @@ public class View extends JPanel {
 							clr = s.color;
 	//						System.out.println("Found: " + key);
 						} else {
-							clr = Color.WHITE;
+							clr = new Color(180, 180, 180);
 						}
 					}
 				}
