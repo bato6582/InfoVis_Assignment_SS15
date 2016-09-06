@@ -79,19 +79,16 @@ public class View extends JPanel {
 		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
 		    ObjectInput input = new ObjectInputStream (buffer);
 		    data_map = new LinkedHashMap<>((HashMap<Integer, HashMap<String, Data>>) input.readObject());
-		    //System.out.println(((HashMap<Integer, String>) input.readObject()).get(2015));
 		} else {
-			// save
+			System.out.println("Generating Serialize Object. Please remain patient!");
+			// save datamap to avoid processing time for the next start of the system
 			readData();
 			DataMap serialize_object = new DataMap();
 			serialize_object.data_map = new LinkedHashMap<>(data_map);
-			//serialize_object.data_map = new HashMap<>(data_map);
 			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(datamap_path));
 			os.writeObject(serialize_object.data_map);
 			os.close();
 		}
-		
-		//printData();
 	}
 	
 
@@ -511,6 +508,7 @@ public class View extends JPanel {
 	//			System.out.println("y: " + y);
 	//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
 				g2D.drawLine(last_x, last_y, x_coord, y);
+				g2D.setColor(Color.RED);
 				g2D.drawLine(x_coord, y_max, x_coord, diagram_line_y);
 //					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
 				last_x  = x_coord;

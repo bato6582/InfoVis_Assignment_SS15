@@ -21,7 +21,7 @@ public class Data implements Serializable {
 	public HashMap<String, Data> children = new LinkedHashMap<>();
 	private HashMap<String, Integer> values = new LinkedHashMap<>();
 
-	
+	// initial constructor
 	public Data(int y, String n) throws IOException {
 		year = y;
 		name = n;
@@ -37,10 +37,8 @@ public class Data implements Serializable {
 		createChildren();
 	}
 	
+	// constructor for children
 	public Data(int y, int lvl, String n, String p, ArrayList<String> p_list) throws IOException {
-//		System.out.println("");
-//		System.out.println("new Data");
-		
 		year = y;
 		level = lvl + 1;
 		name = n;
@@ -55,19 +53,13 @@ public class Data implements Serializable {
 		
 		readData();
 		
+		// no more levels than 5
 		if (level < 4) {
 			createChildren();
 		}
 	}
 	
 	private void createChildren() throws IOException {
-//		System.out.println("Create Children path " + path);
-//		System.out.println("Name: " + name + " Parent_list: " + parent_list);
-		
-//		for (String month : months_ordered) {
-//			if (parent_list.contains(month)) {
-//			
-//		}
 		if (addName()) {			
 			ArrayList<String> new_parent_list = new ArrayList<String>(parent_list);		
 			new_parent_list.add(name);
@@ -75,6 +67,8 @@ public class Data implements Serializable {
 			BufferedReader reader = new BufferedReader(new FileReader(path));
 			String line = reader.readLine();
 			String[] words = line.split(";");
+			
+			// read data and add children
 			for (String word : words) {
 				ArrayList<Data> data = null;
 				if (!word.equals("year") && !word.equals("number")) {
@@ -98,18 +92,20 @@ public class Data implements Serializable {
 		
 		if (name.equals("female") || parent_list.contains("female")) {
 			if (word.equals("male")) {
-				// nothing
+				// if female is chosen, male can not be chosen
 			} else {
 				if (!parent_list.contains("month")) {
+					// if sex is already chosen, only month is possible children
 					data.add(new Data(year, level, "month", path, new_parent_list));
 				}
 			}
 			
 		} else if (name.equals("male") || parent_list.contains("male")) {
 			if (word.equals("female")) {
-				// nothing
+				// if male is chosen, female can not be chosen
 			} else {
 				if (!parent_list.contains("month")) {
+					// if sex is already chosen, only month is possible children
 					data.add(new Data(year, level, "month", path, new_parent_list));
 				}
 			}
@@ -132,17 +128,18 @@ public class Data implements Serializable {
 			} else if ((!name.equals("sex")) && word.equals("female")) {
 				data.add(new Data(year, level, "sex", path, new_parent_list));
 			} else if ((!name.equals("sex")) && word.equals("male")) {
-				// nothing add only for female sex
+				// sex is already added by female
 			
 			} else if (!name.equals("birth") && word.equals("age mother")) {
+				// age of mother is only a child of birth
 			} else if (!name.equals("death") && word.equals("age")) {
+				// age is only a child of death
 				
 			} else {
 				if (!name.equals(word) && !parent_list.contains(word)) {
 					data.add(new Data(year, level, word, path, new_parent_list));
 				}
-			}
-			
+			}	
 		}
 		return data;
 		
@@ -181,12 +178,10 @@ public class Data implements Serializable {
 		} else {
 			//...
 		}
-//		System.out.println(name + path);
-				
 	}
 	
 	
-	
+	// get values of birth
 	private void readBirth() throws NumberFormatException, IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
@@ -202,7 +197,6 @@ public class Data implements Serializable {
 				
 			} else {
 				if (words[0].equals(year + "")) {
-//					System.out.println("CHECK");
 					number += Integer.parseInt(getValueOfCell(header, words, "number"));
 				}
 			}
@@ -211,6 +205,7 @@ public class Data implements Serializable {
 		reader.close();
 	}
 	
+	// get values of death
 	private void readDeath() throws NumberFormatException, IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
@@ -235,7 +230,6 @@ public class Data implements Serializable {
 	}
 	
 	
-	
 	private void readSex() throws NumberFormatException, IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line = null;
@@ -249,6 +243,7 @@ public class Data implements Serializable {
 					month = mo;					
 				}
 			}
+			// if month is in parent list --> make sex values dependend on the specific month
 			if (month != null) {
 				while ((line = reader.readLine()) != null) {
 					
@@ -328,16 +323,14 @@ public class Data implements Serializable {
 				if (words[0].equals(year + "")) { // right year
 					age = words[1];
 					int number = Integer.parseInt(words[2]);
-
-//					System.out.println("NUMBER MOTHER				" + number);
 					if (number != 0) {
 						values.put(age, number);
 					}	
 				}
 			}
 		}
-		if (age.equals("")) { // no content for year
-			values.put("No values available for this year", 1);
+		if (age.equals("")) {
+			values.put("No values for this year", 1);
 		}
 		reader.close();
 	}
@@ -358,8 +351,8 @@ public class Data implements Serializable {
 				}
 			}
 		}
-		if (age.equals("")) { // no content for year
-			values.put("No values available for this year", 1);
+		if (age.equals("")) {
+			values.put("No values for this year", 1);
 		}
 		reader.close();
 	}
@@ -392,17 +385,6 @@ public class Data implements Serializable {
 			}
 		}
 		return print;
-	}
-	
-	private void printArray(String[] percentages) {
-		if (percentages != null) {
-			
-			System.out.print("[");
-			for (String number : percentages) {
-				System.out.print(number + ", ");
-			}
-			System.out.print("]");
-		}	
 	}
 	
 	
