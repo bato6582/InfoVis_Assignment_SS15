@@ -317,12 +317,29 @@ public class View extends JPanel {
 		// ********** CALCULATE DATA FOR ALL YEARS ********** //
 		double[] numbers_birth = new double[65];
 		double[] numbers_death = new double[65];
+
+		HashMap<String, Data> map = new HashMap<String, Data>();
+		Data data;
 		
-		HashMap<String, Data> map = new HashMap<String, Data>(data_map.get(year));
 		String[] keys = current_tree_path.split("/");
+		// checks if data may be from a set, where we do not have data for every year
+		// in this case we need to get data from a year, where we have data (e.g. 2012)
+		if (keys[keys.length - 1].equals("age mother") || keys[keys.length - 1].equals("age")) {
+			int old_year = year;
+			year = 2012;
+			map  = new HashMap<String, Data>(data_map.get(year));
+			data = getRootData(current_tree_path);
+			year = old_year;
+		} else {
+			map  = new HashMap<String, Data>(data_map.get(year));			
+			data = getRootData(current_tree_path);
+		}
+			
+			
 		
-		Data data = getRootData(current_tree_path);
+		
 		if (data != null) {
+			
 			
 			Set<String> key_set = data.getValues().keySet();
 			for (String key : key_set) {
