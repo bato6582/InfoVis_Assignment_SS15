@@ -323,12 +323,29 @@ public class View extends JPanel {
 		// ********** CALCULATE DATA FOR ALL YEARS ********** //
 		double[] numbers_birth = new double[65];
 		double[] numbers_death = new double[65];
+
+		HashMap<String, Data> map = new HashMap<String, Data>();
+		Data data;
 		
-		HashMap<String, Data> map = new HashMap<String, Data>(data_map.get(year));
 		String[] keys = current_tree_path.split("/");
+		// checks if data may be from a set, where we do not have data for every year
+		// in this case we need to get data from a year, where we have data (e.g. 2012)
+		if (keys[keys.length - 1].equals("age mother") || keys[keys.length - 1].equals("age")) {
+			int old_year = year;
+			year = 2012;
+			map  = new HashMap<String, Data>(data_map.get(year));
+			data = getRootData(current_tree_path);
+			year = old_year;
+		} else {
+			map  = new HashMap<String, Data>(data_map.get(year));			
+			data = getRootData(current_tree_path);
+		}
+			
+			
 		
-		Data data = getRootData(current_tree_path);
+		
 		if (data != null) {
+			
 			
 			Set<String> key_set = data.getValues().keySet();
 			for (String key : key_set) {
@@ -404,6 +421,10 @@ public class View extends JPanel {
 				y_min = (int) (corner_point.getY() - 25);
 			}
 			
+			Rectangle2D.Double bg_rect = new Rectangle2D.Double (x_min, y_max - 2, x_max - x_min, y_min - y_max + 2);
+			g2D.setColor(new Color(180, 180, 180));
+			g2D.fill(bg_rect);
+			g2D.draw(bg_rect);
 			
 			
 			int diagram_line_y = y_min;
@@ -416,7 +437,7 @@ public class View extends JPanel {
 			double min = Integer.MAX_VALUE;
 			double max = 0;
 			
-			// do this allready when collecting data
+			// do this already when collecting data
 			for (String key : category_numbers.keySet()) {
 				
 				for (double p : category_numbers.get(key)) {
@@ -467,7 +488,7 @@ public class View extends JPanel {
 							clr = s.color;
 	//						System.out.println("Found: " + key);
 						} else {
-							clr = Color.WHITE;
+							clr = new Color(180, 180, 180);
 						}
 					}
 				}
@@ -701,7 +722,6 @@ public class View extends JPanel {
 	}
 	
 	private void drawLabels(Graphics2D g2D) {
-		// draw label
 		for (Segment s : segments.get(level)) {
 			if(s.label_pos.x != 0 && s.label_pos.y != 0){
 				//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
@@ -731,46 +751,34 @@ public class View extends JPanel {
 		return (i < j) ? i : j;
 	}
 
+	// if segment was clicked
 	public void clicked(String label, int lvl) {
-		//System.out.println("PATH before: " + current_tree_path + "		LEVEL before: " + level);
 		String[] dirs = current_tree_path.split("/");
 		
 		if (lvl == dirs.length - 1) { // new level
 			if (lvl < max_level - 1) {
-				// check if data has children				
-				HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year)); // von dataMap
-				Data data = null;
+				Data data = getRootData(current_tree_path);
 				
-				for (String key : dirs) {
-					if (m.get(key) != null) {
-						data = m.get(key);
-						m = data.getChildrenMap();
-					}
-				}
+				// check if data has children
 				if (data == null) {
 					current_tree_path += label + "/";
 					level++;
 				} else {
 					if (data.children.size() != 0) {
-//						System.out.println(data.name + "  " + data.children.size());
 						current_tree_path += label + "/";
 						level++;							
 					}
 				}
-				
 			}
-		} else { // jump back to chosen former level
+		} else {
+			// jump back to chosen former level
 			current_tree_path = "";
 			for (int i = 0; i <= lvl; i++) {
 				current_tree_path += dirs[i] + "/";
 			}
 			level = lvl;
 		}
-		
-		//System.out.println("PATH after: " + current_tree_path + "		LEVEL after: " + level);
-		System.out.println();
 	}
-	
 	
 	public Segment getSegmentOnLevel (int lvl, String label) {
 		for (Segment seg : segments.get(lvl)) {
@@ -783,21 +791,10 @@ public class View extends JPanel {
 		System.exit(0);
 		return new Segment();
 	}
-	
-	
+
 
 	@Override
 	public void update(Graphics g) {
 		paint(g);
 	}
-
-
-	//public Rectangle2D getMarkerRectangle() {
-	//	return markerRectangle;
-	//}
-	
-
-
-
-
 }
