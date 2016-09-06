@@ -69,7 +69,7 @@ public class View extends JPanel {
 		timeline_y = height - 50;
 		pixel_per_year = (width - 100) / (double) (2015 - 1950 + 1);
 		
-		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
+		timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
 		
 		// check if datamap file exists:
 		String datamap_path = "data/datamap.ser";
@@ -190,7 +190,7 @@ public class View extends JPanel {
 		}
 		
 		if (size_changed) {
-			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - pixel_per_year, pixel_per_year, 2 * pixel_per_year);
+			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
 		}
 
 		
@@ -466,7 +466,7 @@ public class View extends JPanel {
 					}
 				}
 					
-				System.out.println("LENGTH: " + tmp_numbers.length);
+//				System.out.println("LENGTH: " + tmp_numbers.length);
 				for (int i = 1; i < tmp_numbers.length; i++) {
 //				for (int i = 2; i <= tmp_numbers.length; i++) {
 					x_coord = 25 + (int) ((i) * diagram_pixel_per_year);

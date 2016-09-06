@@ -98,7 +98,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 			int x_pos = (int) (view.timeline_rectangle.getX() + distance_x);
 			int y_pos = (int) (view.timeline_rectangle.getY() + distance_y);
 			if (x_pos > view.timeline_x_start && x_pos < view.timeline_x_end - view.pixel_per_year) {
-				view.timeline_rectangle.setRect(x_pos, view.timeline_y - view.pixel_per_year, view.pixel_per_year, view.pixel_per_year * 2);
+				view.timeline_rectangle.setRect(x_pos, view.timeline_y - 10, view.pixel_per_year, 20);
 			}			
 		}
 		
