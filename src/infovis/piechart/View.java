@@ -71,24 +71,20 @@ public class View extends JPanel {
 		// check if datamap file exists:
 		String datamap_path = "data/datamap.ser";
 		File f = new File(datamap_path);
-		if(f.exists()) {
+		if(!f.exists()) {
 			// read
 		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
 		    ObjectInput input = new ObjectInputStream (buffer);
 		    data_map = new LinkedHashMap<>((HashMap<Integer, HashMap<String, Data>>) input.readObject());
-		    //System.out.println(((HashMap<Integer, String>) input.readObject()).get(2015));
 		} else {
-			// save
+			// save datamap to avoid processing time for the next start of the system
 			readData();
 			DataMap serialize_object = new DataMap();
 			serialize_object.data_map = new LinkedHashMap<>(data_map);
-			//serialize_object.data_map = new HashMap<>(data_map);
 			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(datamap_path));
 			os.writeObject(serialize_object.data_map);
 			os.close();
 		}
-		
-		//printData();
 	}
 	
 
