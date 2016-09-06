@@ -394,18 +394,26 @@ public class View extends JPanel {
 			}
 
 			// ********** DRAW DIAGRAM ********** //
-			
-			int diagram_line_y = (int) (height * 0.5);
-			g2D.setColor(Color.BLACK);
-			g2D.drawLine(25, diagram_line_y, width / 4 - 25, diagram_line_y);
-			g2D.drawString("1950", 25, diagram_line_y + 22);
-			g2D.drawString("2015", width / 4 - 50, diagram_line_y + 22);
-			
-			int y_min = diagram_line_y;
-			int y_max = 25;
-			
-			int x_min = 25;
+			int x_min = 75;
 			int x_max = width / 4 - 25;
+
+			int y_min = (int) (height * 0.5);
+			int y_max = 25;
+
+			if (width * 0.5 - max_radius - 10 <= x_max) {
+				Point2D.Double corner_point = Segment.rotatePoint(new Point2D.Double(width * 0.5, height * 0.5 - max_radius), new Point2D.Double(width * 0.5, height * 0.5), -45.0);
+				x_max = (int) (corner_point.getX() - 25);
+				y_min = (int) (corner_point.getY() - 25);
+			}
+			
+			
+			
+			int diagram_line_y = y_min;
+			g2D.setColor(Color.BLACK);
+			g2D.drawLine(x_min, diagram_line_y, x_max, diagram_line_y);
+			g2D.drawString("1950", x_min - 12, diagram_line_y + 16);
+			g2D.drawString("2015", x_max - 20, diagram_line_y + 16);
+			
 
 			double min = Integer.MAX_VALUE;
 			double max = 0;
@@ -419,9 +427,9 @@ public class View extends JPanel {
 				}
 			}
 			
-			g2D.drawLine(25, diagram_line_y, 25, 25);
-			g2D.drawString("" + min, 25 - 24, y_min);		
-			g2D.drawString("" + max, 25 - 24, y_max);
+			g2D.drawLine(x_min, diagram_line_y, x_min, 25);
+			g2D.drawString("" + min, 10, y_min);		
+			g2D.drawString("" + max, 10, y_max + 4);
 			
 			// ********** DRAW DATA LINES ********** //
 
@@ -444,10 +452,10 @@ public class View extends JPanel {
 			for (String key : category_numbers.keySet()) {
 //				System.out.println("key: " + key);
 				
-				int x_coord = 25;
+				int x_coord = x_min;
 				int y_coord = diagram_line_y;
 
-				int last_x = 25;
+				int last_x = x_min;
 				double[] tmp_numbers = category_numbers.get(key);
 
 				
@@ -469,7 +477,7 @@ public class View extends JPanel {
 //				System.out.println("LENGTH: " + tmp_numbers.length);
 				for (int i = 1; i < tmp_numbers.length; i++) {
 //				for (int i = 2; i <= tmp_numbers.length; i++) {
-					x_coord = 25 + (int) ((i) * diagram_pixel_per_year);
+					x_coord = x_min + (int) ((i) * diagram_pixel_per_year);
 					g2D.setColor(clr);
 		//			last_x = (int) (percentages[i - 1] * 100);
 		//			Data d = data_map.get("" + i).get(s.label);
@@ -493,7 +501,7 @@ public class View extends JPanel {
 			// ********** DRAW YEAR LINE ********** //
 			
 			g2D.setColor(Color.BLUE);
-			int x_year = 25 + (int) (diagram_pixel_per_year * (year - 1950 - 1));
+			int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950 - 1));
 			g2D.drawLine(x_year, y_min, x_year, y_max);
 			g2D.setColor(Color.BLACK);
 			
