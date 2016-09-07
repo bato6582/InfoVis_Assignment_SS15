@@ -229,6 +229,7 @@ public class View extends JPanel {
 			level = i;
 			categoric = (level % 2 == 1);
 			
+			System.out.println(year + " " + data_map.get(year));
 			setPercentages(data_map.get(year), new_tree_path);
 		
 			Point2D.Double center = new Point2D.Double(width * 0.5, (height - 50) * 0.5);
@@ -529,7 +530,7 @@ public class View extends JPanel {
 		int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950));
 		if (change_time_diagram && diagram_year_triangle.xpoints[0] <= x_max && diagram_year_triangle.xpoints[0] >= x_min) {
 			x_year = diagram_year_triangle.xpoints[0];
-			year = 1950 + (int) Math.round((x_year - x_min - 2) / diagram_pixel_per_year);
+			year = 1950 + (int) Math.round((x_year - x_min - 2) / diagram_pixel_per_year) + 1;
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
 		} else {
 			System.out.println("xpos: " + diagram_year_triangle.xpoints[0]  + "   xmax: " +x_max);
@@ -551,6 +552,7 @@ public class View extends JPanel {
 	private void setPercentages(HashMap<String, Data> map, String new_current_tree_path){
 		if (new_current_tree_path.equals("root/")){
 			// init piechart
+			System.out.println( map.get("birth"));
 			double births = map.get("birth").getValues().get("birth");
 			double deaths = map.get("death").getValues().get("death");		
 			
@@ -602,6 +604,8 @@ public class View extends JPanel {
 	// go through tree path and return data at the end of the tree path
 	private Data getRootData(String tree_path) {
 		String[] keys = tree_path.split("/");
+		System.out.println(keys);
+		System.out.println(year);
 		HashMap<String, Data> m = new HashMap<String, Data>(data_map.get(year));
 		Data data = null;
 		
