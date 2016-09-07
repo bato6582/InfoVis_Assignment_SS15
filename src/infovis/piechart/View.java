@@ -40,6 +40,7 @@ public class View extends JPanel {
 	public boolean selection_chosen = false;
 	public boolean ctrl_pressed = false;
 	public boolean shift_pressed = false;
+	public boolean percent = true;
 	private boolean categoric = false;
 
 	public int timeline_x_start = 50;
@@ -54,6 +55,7 @@ public class View extends JPanel {
 	public HashMap< Integer, ArrayList<Segment>> segments = new HashMap<Integer, ArrayList<Segment>>();
 	public ArrayList<String> selected_segments = new ArrayList<>();
 	public String[] labels;
+	public double[] values;
 	public double[] percentages;
 	
 	private static String path_birth = "data/Geburten_Monat_Sex_1950-2015.csv";
@@ -553,16 +555,15 @@ public class View extends JPanel {
 			double deaths = map.get("death").getValues().get("death");		
 			
 			double num = deaths + births;
-			deaths /= num;
-			births /= num;
-			
-			percentages = new double[] {births, deaths};
+			values = new double[] {births, deaths};
+			percentages = new double[] {births / num, deaths / num};
 			labels = new String[] {"birth", "death"};
 			
 		} else if (categoric) {			
 			root = getRootData(new_current_tree_path); 
 			
 			Set<String> key_set = root.getChildrenMap().keySet();
+			values = new double[key_set.size()]; // no values necessary because it is categoric
 			percentages = new double[key_set.size()];
 			
 			for (int i = 0; i < key_set.size(); i++) {
@@ -576,6 +577,7 @@ public class View extends JPanel {
 			double sum = 0.0;
 			Set<String> key_set = root.getValues().keySet();
 			
+			values = new double[key_set.size()];
 			percentages = new double[key_set.size()];
 			
 			// sum up percentages
@@ -583,6 +585,7 @@ public class View extends JPanel {
 			for (String key : key_set) {
 				double number = root.getValues().get(key);
 				percentages[iterator] = number;
+				values[iterator] = number;
 				sum += number;
 				iterator++;
 			}
@@ -738,7 +741,9 @@ public class View extends JPanel {
 	}
 	
 	private void drawLabels(Graphics2D g2D) {
-		for (Segment s : segments.get(level)) {
+		//for (Segment s : segments.get(level)) {
+		for (int i = 0; i < segments.get(level).size(); i++) {
+			Segment s = segments.get(level).get(i);
 			if(s.label_pos.x != 0 && s.label_pos.y != 0){
 				//from http://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color, 23.08.2016, 15:40 answer from User Mark Ransom
 				double fac = 1 / 255.0;
@@ -750,11 +755,15 @@ public class View extends JPanel {
 				b = b <= 0.03928 ? b/12.92 : Math.pow((b + 0.055)/1.055, 2.4);
 				double l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 				
+			
 				String string = s.label;
 				g2D.setColor(l > 0.179 ? Color.BLACK : Color.WHITE);
 				g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() /*+ string.length() * 4*/));
 				if (!categoric) {
 					string = Math.round(s.percent*1000) / 10.0 + " %";
+					if (!percent) {
+						string = values[i] + "";
+					}
 					g2D.drawString(string, (int) (s.label_pos.getX() - string.length() * 0.5 * 8), (int) (s.label_pos.getY() + 13));
 				}
 				g2D.setColor(s.color);

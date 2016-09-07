@@ -31,6 +31,14 @@ public class KeyboardController extends JFrame implements KeyListener{
 			//16 == shift
 			view.shift_pressed = true;
 			view.repaint();
+		} else if (e.getKeyCode() == 32) {
+			//32 == space
+			if (view.percent) {
+				view.percent = false;
+			} else {
+				view.percent = true;				
+			}
+			view.repaint();
 		}
 //			System.out.println("pressed KeyCode: " + e.getKeyCode());
 		
