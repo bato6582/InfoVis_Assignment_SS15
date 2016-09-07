@@ -510,8 +510,8 @@ public class View extends JPanel {
 	//			System.out.println("y: " + y);
 	//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
 				g2D.drawLine(last_x, last_y, x_coord, y);
-				g2D.setColor(Color.RED);
-				g2D.drawLine(x_coord, y_max, x_coord, diagram_line_y);
+				//g2D.setColor(Color.RED);
+				//g2D.drawLine(x_coord, y_max, x_coord, diagram_line_y);
 //					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
 				last_x  = x_coord;
 				last_y = y;
