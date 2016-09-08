@@ -16,7 +16,7 @@ public class Data implements Serializable {
 	private String path = "";
 	private int level = 0;
 	ArrayList<String> parent_list = new ArrayList<>();
-	private static String[] months_ordered = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"};
+	private static String[] months_ordered = {"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"};
 	
 	public HashMap<String, Data> children = new LinkedHashMap<>();
 	private HashMap<String, Integer> values = new LinkedHashMap<>();
@@ -118,7 +118,7 @@ public class Data implements Serializable {
 					data.add(new Data(year, level, "female", path, new_parent_list));
 				}
 				
-			// add january - december
+			// add januaryy - december
 			} else if (name.equals("month")) {
 				for (String month : months_ordered) {
 					data.add(new Data(year, level, month, path, new_parent_list));
