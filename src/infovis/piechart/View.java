@@ -530,7 +530,7 @@ public class View extends JPanel {
 		int x_year = x_min + (int) (diagram_pixel_per_year * (year - 1950));
 		if (change_time_diagram && diagram_year_triangle.xpoints[0] <= x_max && diagram_year_triangle.xpoints[0] >= x_min) {
 			x_year = diagram_year_triangle.xpoints[0];
-			year = 1950 + (int) Math.round((x_year - x_min - 2) / diagram_pixel_per_year) + 1;
+			year = 1950 + (int) Math.round((x_year - x_min ) / diagram_pixel_per_year);
 			timeline_rectangle.setRect(50 + pixel_per_year * (year - 1950), timeline_y - 10, pixel_per_year, 20);
 		} else {
 			System.out.println("xpos: " + diagram_year_triangle.xpoints[0]  + "   xmax: " +x_max);
