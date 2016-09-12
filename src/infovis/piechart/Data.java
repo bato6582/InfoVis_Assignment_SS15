@@ -118,7 +118,7 @@ public class Data implements Serializable {
 					data.add(new Data(year, level, "female", path, new_parent_list));
 				}
 				
-			// add januaryy - december
+			// add january - december
 			} else if (name.equals("month")) {
 				for (String month : months_ordered) {
 					data.add(new Data(year, level, month, path, new_parent_list));

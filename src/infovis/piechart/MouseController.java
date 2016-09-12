@@ -7,8 +7,6 @@ import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Rectangle2D;
-import java.util.Map;
 
 public class MouseController implements MouseListener, MouseMotionListener {
 
@@ -18,7 +16,6 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	private Model model = null;
 	Shape currentShape = null;
 	private double clicked_x = 0.0;
-	private double clicked_y = 0.0;
 	
 	
 	
@@ -65,11 +62,9 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		if (view.timeline_rectangle.contains(e.getX(), e.getY())) {
 			view.change_time = true;
 			clicked_x = e.getX();
-			clicked_y = e.getY();
 		} else if (view.diagram_year_triangle.contains(e.getX(), e.getY())) {
 			view.change_time_diagram = true;
 			clicked_x = e.getX();
-			clicked_y = e.getY();
 		}
 		
 		view.repaint();
@@ -96,7 +91,6 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		
 		
 		clicked_x = e.getX();
-		clicked_y = e.getY();
 
 		view.repaint();
 	}

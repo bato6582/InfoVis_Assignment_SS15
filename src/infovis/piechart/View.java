@@ -81,6 +81,7 @@ public class View extends JPanel {
 		    InputStream buffer = new BufferedInputStream(new FileInputStream(datamap_path));
 		    ObjectInput input = new ObjectInputStream (buffer);
 		    data_map = new LinkedHashMap<>((HashMap<Integer, HashMap<String, Data>>) input.readObject());
+		    input.close();
 		} else {
 			System.out.println("Generating Serialize Object. Please remain patient!");
 			// save datamap to avoid processing time for the next start of the system
@@ -93,40 +94,6 @@ public class View extends JPanel {
 		}
 	}
 	
-
-	private void printData() {
-		for (int year: data_map.keySet()) {
-			HashMap<String, Data> map = data_map.get(year);
-			System.out.println("year: " + year);
-			
-			for (String key : map.keySet()){
-				Data data = map.get(key);
-				if (data != null) {
-					System.out.println(data.print());	
-				}				
-			}
-		}
-	}
-	
-	
-	private void printArray(double[] percentages) {
-		System.out.print("[");
-		for (double number : percentages) {
-			System.out.print(number + ", ");
-		}
-		System.out.println("]");
-	}
-	
-	private void printArray(String[] percentages) {
-		if (percentages != null) {
-			
-			System.out.print("[");
-			for (String number : percentages) {
-				System.out.print(number + ", ");
-			}
-			System.out.print("]");
-		}	
-	}
 
 	// load years and create data (data will be filled recursively in Data)
 	private static void readData() throws IOException {
@@ -364,18 +331,6 @@ public class View extends JPanel {
 						}
 					}
 					// get current Data
-					double sum = 0.0;
-					//System.out.println(key_set);
-//					percentages = new double[key_set.size()];
-					
-//					int iterator = 0;
-//					for (String key : key_set) {
-//						double number = data.getValues().get(key);
-//						percentages[iterator] = number;
-//						sum += number;
-//						iterator++;
-//					}
-//								System.out.println("key: " + key);
 					if (data.getValues().get(key) == null) {
 						numbers[i] = 0;
 						
@@ -384,23 +339,12 @@ public class View extends JPanel {
 						
 					}
 				}
-//				System.out.println("key: " + key);
-//				printArray(numbers);
 				category_numbers.put(key, numbers);
 			}
-//			System.out.println("cat_nums: " + category_numbers);
 		} else {
 			for (int i = 0; i < 66; i++) {
 				map = new HashMap<String, Data>(data_map.get(i+1950));
 				if (current_tree_path.equals("root/")){
-					
-			//		System.out.println(map.get("birth").getValues().get("birth"));
-			//		double num = deaths + births;
-			//		deaths /= num;
-			//		births /= num;
-					
-					
-					// TODO dont set it every year dumbass
 					numbers_birth [i] = map.get("birth").getValues().get("birth");
 					numbers_death [i] = map.get("death").getValues().get("death");
 					
@@ -455,41 +399,22 @@ public class View extends JPanel {
 		g2D.drawString("" + max, 10, y_max + 4);
 		
 		// ********** DRAW DATA LINES ********** //
-
-		
-//			max *= 100;
-//			min *= 100;
-		
 		double pixel_per_min_max = ((y_min - y_max) / (max - min));
-//			double pixel_per_min_max = ((y_min - y_max) / (max));
-//			System.out.println("pixel_per_min_max: " + pixel_per_min_max);
-//			System.out.println("(" + y_min + " - " + y_max +") / (" + max + " - " + min+")");
 		
 		
 		Color clr = new Color(255, 128, 0);
-//			Color clr = Color.RED;
-		int color_gradient = (3 * 255) / (percentages.length + 1);
-		int iter = 0;
-//			System.out.println(category_numbers.keySet());
 		for (String key : category_numbers.keySet()) {
-//				System.out.println("key: " + key);
 			
 			int x_coord = x_min;
-			int y_coord = diagram_line_y;
 
 			int last_x = x_min;
 			double[] tmp_numbers = category_numbers.get(key);
-
 			
 			int last_y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[0] - min)) ;
-//			System.out.println("length: " + TMP_numbers.length);
 			for (Segment s : segments.get(level)){
-//				System.out.println("searching for: " + key + "		segment: " + s.label);
 				if (s.label.equals(key)) {
-//					System.out.println("is this sleceted?: " + key);
 					if(selected_segments.contains(key) || selected_segments.size() == 0) {
 						clr = s.color;
-//						System.out.println("Found: " + key);
 					} else {
 						clr = new Color(180, 180, 180);
 					}
@@ -497,29 +422,14 @@ public class View extends JPanel {
 			}
 
 				
-//				System.out.println("LENGTH: " + tmp_numbers.length);
-//				int iter_year=
 			for (int i = 1; i < tmp_numbers.length; i++) {
-//				for (int i = 2; i <= tmp_numbers.length; i++) {
 				x_coord = x_min + (int) Math.round((i) * diagram_pixel_per_year);
 				g2D.setColor(clr);
-	//			last_x = (int) (percentages[i - 1] * 100);
-	//			Data d = data_map.get("" + i).get(s.label);
 				int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i] - min) );
-//					int y = (int) (y_min - (pixel_per_min_max) * (tmp_numbers[i-1] - min) );
-//					int y = (int) (y_min - (pixel_per_min_max) * (TMP_numbers[i]) );
-	//			System.out.println("y: " + y);
-	//			System.out.println(y_min + " - " + pixel_per_min_max + " * " + (numbers[i] - min));
 				g2D.drawLine(last_x, last_y, x_coord, y);
-				//g2D.setColor(Color.RED);
-				//g2D.drawLine(x_coord, y_max, x_coord, diagram_line_y);
-//					System.out.println("y: " + y + " last y: " + last_y + " y min: " + y_min);
 				last_x  = x_coord;
 				last_y = y;
-		
-//					clr = new Color( min((i + 1) * color_gradient, 255), min((int) (0.5 * (i + 1) * color_gradient), 255), min((int) (0.33 * (i + 1) * color_gradient), 255));
 			}
-			iter++;
 		}
 
 		// ********** DRAW YEAR LINE ********** //
@@ -745,7 +655,6 @@ public class View extends JPanel {
 	}
 	
 	private void drawLabels(Graphics2D g2D) {
-		//for (Segment s : segments.get(level)) {
 		for (int i = 0; i < segments.get(level).size(); i++) {
 			Segment s = segments.get(level).get(i);
 			if(s.label_pos.x != 0 && s.label_pos.y != 0){

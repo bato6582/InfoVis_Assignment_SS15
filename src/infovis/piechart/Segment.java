@@ -60,7 +60,6 @@ public class Segment {
 		Point2D.Double point = rotatePoint(start_pos, center, -angle);
 
 		int label_pos_to_be = (int) (array_size * 0.5);
-		//System.out.println(whole_angle + " " + array_size);
 		for (int i = 2; i < array_size - 1; i++) {
 			// save polygon points
 			xs[i] = (int) point.getX();
@@ -76,8 +75,6 @@ public class Segment {
 				x /= length;
 				y /= length;
 				double distance_from_center = next_radius >= 0 ? (0.5*(radius + next_radius)) : 0.5 * radius;
-				//System.out.println(label + ": X: " + x + "  Y: " + y + "  distance: " + distance_from_center);
-				//System.out.println("radius: " + radius + "  prev_radius:" + next_radius);
 				x = center.getX() - (x) * distance_from_center;
 				y = center.getY() - (y) * distance_from_center;
 				

@@ -1,11 +1,9 @@
 package infovis.piechart;
 
-import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
-import javax.swing.JTextField;
 
 public class KeyboardController extends JFrame implements KeyListener{
 	private boolean ctrl_pressed = false;
@@ -40,7 +38,6 @@ public class KeyboardController extends JFrame implements KeyListener{
 			}
 			view.repaint();
 		}
-//			System.out.println("pressed KeyCode: " + e.getKeyCode());
 		
 		
 	}
